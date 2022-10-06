@@ -84,6 +84,11 @@ func addToFavorites(userID UserID, animeID AnimeID) error {
 	return _pushToSet(userID, animeID, "Favorites")
 }
 
+func deleteFromFavorites(userID UserID, animeID AnimeID) error {
+	_, err := usersCollection.UpdateByID(ctx, userID, bson.M{"$pull": bson.M{"Favorites": animeID}})
+	return err
+}
+
 func addToWatched(userID UserID, animeID AnimeID) error {
 	return _pushToSet(userID, animeID, "Watched")
 }

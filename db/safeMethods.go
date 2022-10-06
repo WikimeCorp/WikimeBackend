@@ -5,12 +5,14 @@ import (
 	"fmt"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
+	inerr "github.com/WikimeCorp/WikimeBackend/types/myerrors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func AddAnime(anime *Anime) (ansAnimeId AnimeID, err error) {
+// AddAnime creates anime correctly
+func AddAnime(anime *Anime) (ansAnimeID AnimeID, err error) {
 	animeID, err := createAnimeDoc(anime.Title, anime.OriginTitle, anime.Author)
 	if err != nil {
 		return 0, err
@@ -71,4 +73,41 @@ func Rate(animeID AnimeID, userID UserID, rate AnimeRating) error {
 		return err
 	}
 	return nil
+}
+
+// DeleteAnimeFromFavorites removes anime from the list of `favorites` of a user with the id `userID`
+//
+// It must be guaranteed that the user with the `id` exists
+func DeleteAnimeFromFavorites(animeID AnimeID, userID UserID) error {
+	ans, err := ratingCollection.UpdateByID(ctx, animeID, bson.M{"$inc": bson.M{"InFavorites": -1}})
+	if err != nil {
+		return err
+	}
+
+	if ans.MatchedCount == 0 {
+		return &inerr.ErrAnimeNotFound{AnimeID: animeID}
+	}
+
+	err = deleteFromFavorites(userID, animeID)
+
+	return err
+}
+
+// AddAnimeToFavorites adding anime to the list of 'favorites' of a user with the ID 'User ID`
+//
+// It must be guaranteed that the user with the `id` exists
+func AddAnimeToFavorites(animeID AnimeID, userID UserID) error {
+	ans, err := ratingCollection.UpdateByID(ctx, animeID, bson.M{"$inc": bson.M{"InFavorites": 1}})
+
+	if err != nil {
+		return err
+	}
+
+	if ans.MatchedCount == 0 {
+		return &inerr.ErrAnimeNotFound{AnimeID: animeID}
+	}
+
+	err = addToFavorites(userID, animeID)
+
+	return err
 }

@@ -41,7 +41,7 @@ func init() {
 	animeCollection = wikimeDB.Collection("Anime")
 	ratingCollection = wikimeDB.Collection("Rating")
 	genresCollection = wikimeDB.Collection("Genres")
-	commentsCollection = wikimeDB.Collection("Collection")
+	commentsCollection = wikimeDB.Collection("Comments")
 	googleCollection = wikimeDB.Collection("Google")
 	vkCollection = wikimeDB.Collection("Vk")
 	idBaseCollection = wikimeDB.Collection("IdBase")

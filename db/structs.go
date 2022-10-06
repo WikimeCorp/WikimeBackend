@@ -51,11 +51,14 @@ type User struct {
 // Comments is presentation of a document from the `Comments` collection
 type Comments struct {
 	ID       AnimeID `bson:"_id"`
-	Comments []struct {
-		id      primitive.ObjectID
-		UserID  UserID
-		Message string
-	}
+	Comments []Comment
+}
+
+// Comment is a comment struct
+type Comment struct {
+	ID      primitive.ObjectID `bson:"id"`
+	UserID  UserID             `bson:"UserId"`
+	Message string             `bson:"Message"`
 }
 
 // idBaseStruct is presentation of a document from the `IdBase` collection. Only for inner use
