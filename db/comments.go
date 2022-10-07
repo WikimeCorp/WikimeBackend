@@ -1,12 +1,14 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
 	inerr "github.com/WikimeCorp/WikimeBackend/types/myerrors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func createCommentsDoc(animeID AnimeID) error {
@@ -81,4 +83,14 @@ func DeleteCommentByID(commentID primitive.ObjectID) error {
 		return fmt.Errorf("comment with id %v not fount", commentID.Hex())
 	}
 	return nil
+}
+
+// GetComments returns anime comments with the id `animeid`
+func GetComments(animeID AnimeID) error {
+	comments := &Comments{}
+	err := commentsCollection.FindOne(ctx, bson.M{"_id": animeID}).Decode(comments)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return &inerr.ErrAnimeNotFound{AnimeID: animeID}
+	}
+	return err
 }
