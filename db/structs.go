@@ -66,3 +66,7 @@ type idBaseStruct struct {
 	ID     string `bson:"_id"`
 	LastID uint32 `bson:"LastId"`
 }
+
+type genres struct {
+	Genres []string `bson"Genres"`
+}
