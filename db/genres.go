@@ -11,8 +11,8 @@ import (
 var genresList []string
 
 func initGenres() ([]string, error) {
-	_genreList := genres{}
-	err := genresCollection.FindOne(ctx, bson.M{"_id": "Genres"}).Decode(genresList)
+	_genreList := &genres{}
+	err := genresCollection.FindOne(ctx, bson.M{"_id": "Genres"}).Decode(_genreList)
 	return _genreList.Genres, err
 }
 

@@ -5,14 +5,15 @@ import (
 	"fmt"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
+	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
 	inerr "github.com/WikimeCorp/WikimeBackend/types/myerrors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // GetRating gets a rating by anime id
-func GetRating(id AnimeID) (*Rating, error) {
-	ans := &Rating{}
+func GetRating(id AnimeID) (*dbtypes.Rating, error) {
+	ans := &dbtypes.Rating{}
 
 	err := ratingCollection.FindOne(ctx, bson.D{{Key: "_id", Value: id}}).Decode(ans)
 	if err != nil {
@@ -23,7 +24,7 @@ func GetRating(id AnimeID) (*Rating, error) {
 }
 
 func createRatingDoc(id AnimeID) error {
-	_, err := ratingCollection.InsertOne(ctx, Rating{ID: id})
+	_, err := ratingCollection.InsertOne(ctx, dbtypes.Rating{ID: id})
 	return err
 }
 
@@ -109,7 +110,7 @@ func addRate(id AnimeID, rate AnimeRating) (err error) {
 		return fmt.Errorf("invalid 'rate' argument: %d. Must be 1, 2, 3, 4 or 5", rate)
 	}
 
-	rating := &Rating{}
+	rating := &dbtypes.Rating{}
 	err = ratingCollection.FindOne(ctx, bson.M{"_id": id}).Decode(rating)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {

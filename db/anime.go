@@ -5,9 +5,11 @@ import (
 	"time"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
+	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
 	inerr "github.com/WikimeCorp/WikimeBackend/types/myerrors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func createAnimeDoc(title string, originTitle string, author UserID) (AnimeID, error) {
@@ -25,7 +27,7 @@ func createAnimeDoc(title string, originTitle string, author UserID) (AnimeID, e
 		return 0, err
 	}
 
-	anime := Anime{
+	anime := dbtypes.Anime{
 		ID:          animeID,
 		Title:       title,
 		OriginTitle: originTitle,
@@ -48,7 +50,7 @@ func CheckAnime(id AnimeID) (bool, error) {
 	return true, nil
 }
 
-func EditAnime(animeObjPtr *Anime) error {
+func EditAnime(animeObjPtr *dbtypes.Anime) error {
 	err := animeCollection.FindOneAndReplace(ctx, bson.M{"_id": animeObjPtr.ID}, &animeObjPtr).Err()
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -60,8 +62,8 @@ func EditAnime(animeObjPtr *Anime) error {
 	return nil
 }
 
-func GetAnime(id AnimeID) (*Anime, error) {
-	ans := &Anime{}
+func GetAnimeByID(id AnimeID) (*dbtypes.Anime, error) {
+	ans := &dbtypes.Anime{}
 	err := animeCollection.FindOne(ctx, bson.M{"_id": id}).Decode(ans)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -71,4 +73,26 @@ func GetAnime(id AnimeID) (*Anime, error) {
 	}
 
 	return ans, nil
+}
+
+func GetAnimes(genres []string, sortBy string, order int) (ansList []*dbtypes.Anime, err error) {
+	opts := options.Find()
+	opts.SetCursorType(options.NonTailable)
+	opts.SetSort(bson.D{{sortBy, order}})
+
+	cur, err := animeCollection.Find(ctx, bson.M{"Genres": genres}, opts)
+	if err != nil {
+		return ansList, err
+	}
+
+	for cur.Next(ctx) {
+		curAnine := &dbtypes.Anime{}
+		err = cur.Decode(curAnine)
+		if err != nil {
+			return ansList, err
+		}
+		ansList = append(ansList, curAnine)
+	}
+
+	return ansList, err
 }

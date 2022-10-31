@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
@@ -9,11 +10,14 @@ import (
 )
 
 type config struct {
-	PathToPhoto  string `config:"PHOTO_PATH"`
-	Addr         string `config:"ADDR"`
-	Port         string `config:"PORT"`
-	MongoURL     string `config:"MONGO_URL"`
-	DataBaseName string `config:"DB_NAME"`
+	PathToPhoto      string `config:"PHOTO_PATH"`
+	Addr             string `config:"ADDR"`
+	Port             string `config:"PORT"`
+	MongoURL         string `config:"MONGO_URL"`
+	DataBaseName     string `config:"DB_NAME"`
+	VKAPIVersion     string `config:"VKAPIVersion"`
+	SecretKeyForHash string `config:"SECRET_KEY_HASH"`
+	JWTLifeTime      string `config:"JWT_LIFE_TIME"`
 }
 
 var Config config
@@ -34,4 +38,5 @@ func init() {
 	}
 	log.Printf("%+v\n", Config)
 	flag.Parse()
+	fmt.Println(Config.JWTLifeTime)
 }

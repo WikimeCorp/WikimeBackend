@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
+	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
 	inerr "github.com/WikimeCorp/WikimeBackend/types/myerrors"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,10 +12,17 @@ import (
 )
 
 // GetUser gets a user by anime id
-func GetUser(id UserID) (*User, error) {
-	ans := &User{}
+func GetUser(id UserID) (*dbtypes.User, error) {
+	ans := &dbtypes.User{}
 
 	err := usersCollection.FindOne(ctx, bson.M{"_id": id}).Decode(ans)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, &inerr.ErrUserNotFound{id}
+		}
+		return nil, err
+	}
 
 	return ans, err
 }
@@ -34,13 +42,13 @@ func CheckUser(id UserID) (bool, error) {
 
 }
 
-func createUserDoc(nickname string) (UserID, error) {
+func CreateUserDoc(nickname string) (UserID, error) {
 	userID, err := getNextID[UserID]("UserId")
 	if err != nil {
 		return 0, err
 	}
 
-	_, err = usersCollection.InsertOne(ctx, User{
+	_, err = usersCollection.InsertOne(ctx, dbtypes.User{
 		ID:       userID,
 		Nickname: nickname,
 		Role:     "user",
@@ -125,4 +133,9 @@ func checkInRated(animeID AnimeID, userID UserID) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func RemoveUser(id UserID) error {
+	_, err := usersCollection.DeleteOne(ctx, bson.M{"_id": id})
+	return err
 }

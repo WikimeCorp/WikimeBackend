@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
+	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
 	inerr "github.com/WikimeCorp/WikimeBackend/types/myerrors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -19,7 +20,7 @@ func createCommentsDoc(animeID AnimeID) error {
 	if !anime {
 		return &inerr.ErrAnimeNotFound{animeID}
 	}
-	_, err = commentsCollection.InsertOne(ctx, Comments{ID: animeID})
+	_, err = commentsCollection.InsertOne(ctx, dbtypes.Comments{ID: animeID})
 	return err
 }
 
@@ -30,7 +31,7 @@ func AddComment(animeID AnimeID, userID UserID, text string) error {
 	ans, err := commentsCollection.UpdateByID(ctx, animeID,
 		bson.M{
 			"$push": bson.M{
-				"Comments": Comment{primitive.NewObjectID(), userID, text},
+				"Comments": dbtypes.Comment{primitive.NewObjectID(), userID, text},
 			},
 		},
 	)
@@ -87,7 +88,7 @@ func DeleteCommentByID(commentID primitive.ObjectID) error {
 
 // GetComments returns anime comments with the id `animeid`
 func GetComments(animeID AnimeID) error {
-	comments := &Comments{}
+	comments := &dbtypes.Comments{}
 	err := commentsCollection.FindOne(ctx, bson.M{"_id": animeID}).Decode(comments)
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		return &inerr.ErrAnimeNotFound{AnimeID: animeID}

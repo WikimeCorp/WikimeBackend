@@ -19,6 +19,7 @@ var (
 	vkCollection       *mongo.Collection
 	idBaseCollection   *mongo.Collection
 	usersCollection    *mongo.Collection
+	tokensCollecton    *mongo.Collection
 )
 
 var ctx = context.TODO()
@@ -46,4 +47,5 @@ func init() {
 	vkCollection = wikimeDB.Collection("Vk")
 	idBaseCollection = wikimeDB.Collection("IdBase")
 	usersCollection = wikimeDB.Collection("Users")
+	tokensCollecton = wikimeDB.Collection("Tokens")
 }

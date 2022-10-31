@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
+	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
 	inerr "github.com/WikimeCorp/WikimeBackend/types/myerrors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,7 +13,7 @@ import (
 )
 
 // AddAnime creates anime correctly
-func AddAnime(anime *Anime) (ansAnimeID AnimeID, err error) {
+func AddAnime(anime *dbtypes.Anime) (ansAnimeID AnimeID, err error) {
 	animeID, err := createAnimeDoc(anime.Title, anime.OriginTitle, anime.Author)
 	if err != nil {
 		return 0, err
@@ -51,7 +52,7 @@ func Rate(animeID AnimeID, userID UserID, rate AnimeRating) error {
 
 	oneRateProj := bson.M{"Rated": bson.M{"$elemMatch": bson.M{"AnimeId": animeID}}, "Watched": 0}
 
-	user := &User{}
+	user := &dbtypes.User{}
 
 	err := usersCollection.FindOneAndUpdate(ctx,
 		bson.M{"_id": userID, "Rated.AnimeId": animeID},
