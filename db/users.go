@@ -43,7 +43,7 @@ func CheckUser(id UserID) (bool, error) {
 }
 
 func CreateUserDoc(nickname string) (UserID, error) {
-	userID, err := getNextID[UserID]("UserId")
+	userID, err := getNextID[UserID]("UserID")
 	if err != nil {
 		return 0, err
 	}

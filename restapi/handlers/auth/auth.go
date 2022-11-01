@@ -42,7 +42,6 @@ func oAuthVk(w http.ResponseWriter, req *http.Request) {
 			apiErrors.SetErrorInResponce(&apiErrors.ErrBadOuterToken, w, http.StatusBadRequest)
 			return
 		}
-
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
