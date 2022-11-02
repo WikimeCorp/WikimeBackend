@@ -5,11 +5,14 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/WikimeCorp/WikimeBackend/config"
+	"github.com/WikimeCorp/WikimeBackend/types"
 	. "github.com/WikimeCorp/WikimeBackend/types"
 	"github.com/WikimeCorp/WikimeBackend/types/myerrors"
 )
@@ -37,8 +40,8 @@ func hashFunc(bytes []byte) []byte {
 
 func generateJWT(userID UserID) string {
 	payload := JWTPayload{
-		UserID:   userID,
-		DeadLine: time.Now().Add(time.Duration(jwtLifeTime) * time.Second).Unix(),
+		UserID: userID,
+		Exp:    time.Now().UTC().Add(time.Duration(jwtLifeTime) * time.Second).Unix(),
 	}
 
 	payloadBytes, _ := json.Marshal(payload)
@@ -62,10 +65,41 @@ func checkValidJWTSignature(jwtToken string) (bool, error) {
 	if base64.RawURLEncoding.EncodeToString(hash) != signature {
 		return false, nil
 	}
-	//TODO add check exp
+
 	return true, nil
 }
 
 func generateRefreshToken(userID UserID) (string, error) {
 	return "", nil
+}
+
+func checkExp(payload *types.JWTPayload) bool {
+	nowTime := time.Now().UTC().Unix()
+	log.Println(nowTime, payload.Exp)
+	if payload.Exp < nowTime {
+		return false
+	}
+	return true
+}
+
+// CheckJWTValid checks the JWT token for validity
+func CheckJWTValid(jwtToken string) (*types.JWTPayload, error) {
+	goodSignature, err := checkValidJWTSignature(jwtToken)
+	if err != nil || goodSignature == false {
+		return nil, myerrors.ErrJWTTokenInvalidSignature
+	}
+
+	payloadStrInBase64 := strings.Split(jwtToken, ".")[1]
+	payloadBytes, err := base64.RawURLEncoding.DecodeString(payloadStrInBase64)
+	fmt.Println("Payload str:", payloadBytes)
+	payload := types.JWTPayload{}
+
+	_ = json.Unmarshal(payloadBytes, &payload)
+
+	if checkExp(&payload) == false {
+		return nil, myerrors.ErrJWTTokenTimeout
+	}
+
+	return &payload, nil
+
 }

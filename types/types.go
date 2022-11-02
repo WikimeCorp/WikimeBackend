@@ -9,11 +9,23 @@ type SomeID interface {
 	UserID | AnimeID
 }
 
+// OuterIDs is type for outer IDs
 type OuterIDs interface {
 	VKUserID
 }
 
+// JWTPayload is data in JWT token
 type JWTPayload struct {
-	UserID   UserID `json:"sup"`
-	DeadLine int64  `json:"exp"`
+	UserID UserID `json:"sup"`
+	Exp    int64  `json:"exp"`
 }
+
+// Role is user role type
+type Role string
+
+// Roles
+const (
+	UserRole      Role = "user"
+	AdminRole          = "admin"
+	ModeratorRole      = "moder"
+)

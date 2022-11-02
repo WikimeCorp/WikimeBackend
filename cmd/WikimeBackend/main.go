@@ -16,7 +16,12 @@ func setupRouter() *mux.Router {
 
 	// User section
 	userRouter := router.PathPrefix("/user/").Subrouter()
-	userRouter.HandleFunc("/{user_id:[0-9]+}", user.GetUserHandler()).Methods("GET")
+	userRouter.Handle("/{user_id:[0-9]+}",
+		http.HandlerFunc(user.GetUserHandler()),
+	).Methods("GET")
+	userRouter.Handle("/",
+		middleware.NeedAuthorization(http.HandlerFunc(user.GetCurrentUserHandler())),
+	).Methods("GET")
 
 	// Auth section
 	authRouter := router.PathPrefix("/auth/").Subrouter()
