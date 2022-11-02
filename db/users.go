@@ -49,9 +49,16 @@ func CreateUserDoc(nickname string) (UserID, error) {
 	}
 
 	_, err = usersCollection.InsertOne(ctx, dbtypes.User{
-		ID:       userID,
-		Nickname: nickname,
-		Role:     "user",
+		ID:        userID,
+		Nickname:  nickname,
+		Role:      string(UserRole),
+		Favorites: []AnimeID{},
+		Watched:   []AnimeID{},
+		Added:     []AnimeID{},
+		Rated: []struct {
+			ID   AnimeID `bson:"AnimeId"`
+			Rate AnimeRating
+		}{},
 	})
 
 	return userID, err
