@@ -18,7 +18,7 @@ type Anime struct {
 	URLs        []string  `bson:"URLs"`
 	Director    string    `bson:"Director"`
 	DateAdded   time.Time `bson:"DateAdded"`
-	RelaseDate  time.Time `bson:"RelaseDate"`
+	ReleaseDate time.Time `bson:"ReleaseDate"`
 	Author      UserID    `bson:"Author"`
 }
 

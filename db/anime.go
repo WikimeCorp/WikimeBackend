@@ -96,3 +96,7 @@ func GetAnimes(genres []string, sortBy string, order int) (ansList []*dbtypes.An
 
 	return ansList, err
 }
+
+func GetAnimeIDsSortedByRating(genres []string) {
+
+}

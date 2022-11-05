@@ -24,6 +24,9 @@ const (
 	jwtTokenNotFound
 	jwtTokenTimeout
 	jwtTokenInvalidSignature
+	notFound
+	animeNotFound
+	internalServerError
 )
 
 var ErrBadJSONStruct = ErrBaseEndpointError{Message: "Bad json", ErrorCode: badJSONStruct}
@@ -32,6 +35,9 @@ var ErrUserNotFound = ErrBaseEndpointError{Message: "User not found", ErrorCode:
 var ErrJWTTokenNotFound = ErrBaseEndpointError{Message: "JWT token not found, check 'Authorization' header", ErrorCode: jwtTokenNotFound}
 var ErrJWTTokenTimeout = ErrBaseEndpointError{Message: "JWT token timeout", ErrorCode: jwtTokenTimeout}
 var ErrJWTTokenInvalidSignature = ErrBaseEndpointError{Message: "JWT token has invalid signature", ErrorCode: jwtTokenInvalidSignature}
+var ErrNotFound = ErrBaseEndpointError{Message: "Page not found", ErrorCode: notFound}
+var ErrAnimeNotFound = ErrBaseEndpointError{Message: "Anime not found", ErrorCode: animeNotFound}
+var ErrInternalServerError = ErrBaseEndpointError{Message: "Internal server error", ErrorCode: internalServerError}
 
 func SetErrorInResponce(err *ErrBaseEndpointError, w http.ResponseWriter, status int) {
 	w.WriteHeader(status)
