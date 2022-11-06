@@ -14,32 +14,35 @@ import (
 
 // AddAnime creates anime correctly
 func AddAnime(anime *dbtypes.Anime) (ansAnimeID AnimeID, err error) {
-	animeID, err := createAnimeDoc(anime.Title, anime.OriginTitle, anime.Author)
+	newAnime, err := createAnimeDoc(anime.Title, anime.OriginTitle, anime.Author)
 	if err != nil {
 		return 0, err
 	}
+
+	anime.ID = newAnime.ID
+	anime.DateAdded = newAnime.DateAdded
 
 	err = EditAnime(anime)
 	if err != nil {
 		return
 	}
 
-	err = addToAdded(anime.Author, animeID)
+	err = addToAdded(anime.Author, newAnime.ID)
 	if err != nil {
 		return
 	}
 
-	err = createRatingDoc(animeID)
+	err = createRatingDoc(newAnime.ID)
 	if err != nil {
 		return
 	}
 
-	err = createCommentsDoc(animeID)
+	err = createCommentsDoc(newAnime.ID)
 	if err != nil {
 		return
 	}
 
-	return animeID, nil
+	return newAnime.ID, nil
 }
 
 // Rate is rate function on behalf of the user

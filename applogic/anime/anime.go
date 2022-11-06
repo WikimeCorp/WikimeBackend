@@ -24,3 +24,13 @@ func GetAnimeByID(animeID types.AnimeID) (*Anime, error) {
 	}
 	return animeAns, nil
 }
+
+func CreateAnime(anime *Anime) (types.AnimeID, error) {
+	animeDb := anime.NewDBModel()
+	animeID, err := db.AddAnime(animeDb)
+	if err != nil {
+		return 0, err
+	}
+
+	return animeID, nil
+}

@@ -27,10 +27,13 @@ func setupRouter() *mux.Router {
 	).Methods("GET")
 
 	// Anime section
-	animeRouter := router.PathPrefix("/anime/").Subrouter()
+	animeRouter := router.PathPrefix("/anime").Subrouter()
 	animeRouter.HandleFunc("/{anime_id:[0-9]+}",
 		anime.GetAnimeByIDHandler(),
 	).Methods("GET")
+	animeRouter.HandleFunc("",
+		anime.CreateAnimeHandler(),
+	).Methods("POST") // Add auth check
 
 	// Auth section
 	authRouter := router.PathPrefix("/auth/").Subrouter()

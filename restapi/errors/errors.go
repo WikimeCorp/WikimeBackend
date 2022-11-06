@@ -16,6 +16,11 @@ func (e *ErrBaseEndpointError) Error() string {
 	return fmt.Sprintf("Error: %s. Error code: %d", e.Message, e.ErrorCode)
 }
 
+func (e *ErrBaseEndpointError) SetNewMessage(message string) *ErrBaseEndpointError {
+	err := ErrBaseEndpointError{Message: message, ErrorCode: e.ErrorCode}
+	return &err
+}
+
 const (
 	badJSONStruct = iota + 1
 	badOuterToken
@@ -27,6 +32,7 @@ const (
 	notFound
 	animeNotFound
 	internalServerError
+	invalidForm
 )
 
 var ErrBadJSONStruct = ErrBaseEndpointError{Message: "Bad json", ErrorCode: badJSONStruct}
@@ -38,6 +44,7 @@ var ErrJWTTokenInvalidSignature = ErrBaseEndpointError{Message: "JWT token has i
 var ErrNotFound = ErrBaseEndpointError{Message: "Page not found", ErrorCode: notFound}
 var ErrAnimeNotFound = ErrBaseEndpointError{Message: "Anime not found", ErrorCode: animeNotFound}
 var ErrInternalServerError = ErrBaseEndpointError{Message: "Internal server error", ErrorCode: internalServerError}
+var ErrBadValidate = ErrBaseEndpointError{Message: "Form invalid", ErrorCode: invalidForm}
 
 func SetErrorInResponce(err *ErrBaseEndpointError, w http.ResponseWriter, status int) {
 	w.WriteHeader(status)

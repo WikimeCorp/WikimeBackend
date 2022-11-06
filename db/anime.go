@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"log"
 	"time"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
@@ -12,19 +13,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func createAnimeDoc(title string, originTitle string, author UserID) (AnimeID, error) {
+func createAnimeDoc(title string, originTitle string, author UserID) (*dbtypes.Anime, error) {
 	user, err := CheckUser(author)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if !user {
-		return 0, &inerr.ErrUserNotFound{author}
+		return nil, &inerr.ErrUserNotFound{author}
 	}
 
-	animeID, err := getNextID[AnimeID]("AnimeId")
+	animeID, err := getNextID[AnimeID]("AnimeID")
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	anime := dbtypes.Anime{
@@ -35,7 +36,7 @@ func createAnimeDoc(title string, originTitle string, author UserID) (AnimeID, e
 	}
 	_, err = animeCollection.InsertOne(ctx, anime)
 
-	return animeID, err
+	return &anime, err
 }
 
 func CheckAnime(id AnimeID) (bool, error) {
@@ -51,6 +52,7 @@ func CheckAnime(id AnimeID) (bool, error) {
 }
 
 func EditAnime(animeObjPtr *dbtypes.Anime) error {
+	log.Printf("EditAime %+v", animeObjPtr)
 	err := animeCollection.FindOneAndReplace(ctx, bson.M{"_id": animeObjPtr.ID}, &animeObjPtr).Err()
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {

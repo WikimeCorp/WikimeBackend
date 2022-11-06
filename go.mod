@@ -4,14 +4,15 @@ go 1.18
 
 require (
 	github.com/JeremyLoy/config v1.5.0
+	github.com/go-playground/validator/v10 v10.11.1
+	github.com/gorilla/mux v1.8.0
 	go.mongodb.org/mongo-driver v1.10.2
 )
 
 require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/go-playground/validator/v10 v10.11.1 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 )
