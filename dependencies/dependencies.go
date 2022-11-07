@@ -2,6 +2,7 @@ package dependencies
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
@@ -18,7 +19,8 @@ var CtxUserID = "user_id"
 func init() {
 	Validate = validator.New()
 	Validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
-		return fld.Tag.Get("validatorName")
+		jsonName := strings.Split(fld.Tag.Get("json"), ",")[0]
+		return jsonName
 	})
 
 	Decoder = schema.NewDecoder()

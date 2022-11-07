@@ -34,10 +34,20 @@ func setupRouter() *mux.Router {
 	animeRouter.HandleFunc("",
 		anime.CreateAnimeHandler(),
 	).Methods("POST") // Add auth check
+	animeRouter.HandleFunc("/list",
+		anime.GetAnimeByListIDHandler(),
+	).Methods("GET")
+
+	// Images section
+	// animeRouter.PathPrefix("/{anime_id:[0-9]+}/poster").Handler(
+	// 	http.StripPrefix("/anime/",
+	// 		http.FileServer(http.Dir(config.Config.ImagesPath)),
+	// 	),
+	// )
 
 	// Auth section
 	authRouter := router.PathPrefix("/auth/").Subrouter()
-	authRouter.HandleFunc("/vk", auth.OAuthVkHandler()).Methods("GET")
+	authRouter.HandleFunc("/vk", auth.OAuthVkHandler()).Methods("POST")
 
 	router.NotFoundHandler = http.HandlerFunc(other.NotFoundEndpoint)
 

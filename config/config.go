@@ -18,6 +18,7 @@ type config struct {
 	VKAPIVersion     string `config:"VKAPIVersion"`
 	SecretKeyForHash string `config:"SECRET_KEY_HASH"`
 	JWTLifeTime      string `config:"JWT_LIFE_TIME"`
+	ImagesPath       string `config:"IMAGES_PATH"`
 }
 
 var Config config

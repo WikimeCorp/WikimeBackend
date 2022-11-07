@@ -29,3 +29,8 @@ const (
 	AdminRole          = "admin"
 	ModeratorRole      = "moder"
 )
+
+type Pair[first, second any] struct {
+	First  first
+	Second second
+}
