@@ -56,8 +56,8 @@ func CreateUserDoc(nickname string) (UserID, error) {
 		Watched:   []AnimeID{},
 		Added:     []AnimeID{},
 		Rated: []struct {
-			ID   AnimeID `bson:"AnimeId"`
-			Rate AnimeRating
+			ID   AnimeID     `bson:"AnimeId"`
+			Rate AnimeRating `bson:"Rate"`
 		}{},
 	})
 

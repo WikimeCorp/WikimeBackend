@@ -16,15 +16,6 @@ type AnimeCreateRequest struct {
 	ReleaseDate int64    `validate:"required" json:"releaseDate"`
 }
 
-/*
-Title       string   `validate:"required" validateName:"title"`
-	OriginTitle string   `validate:"required" validateName:"originTitle"`
-	Description string   `validate:"required" validateName:"description"`
-	Director    string   `validate:"description,required"`
-	Genres      []string `validate:"genres,required"`
-	ReleaseDate int64    `validate:"releaseDate,required"`
-*/
-
 func (a *AnimeCreateRequest) NewAnimeModel() *anime.Anime {
 	return &anime.Anime{
 		Title:       a.Title,

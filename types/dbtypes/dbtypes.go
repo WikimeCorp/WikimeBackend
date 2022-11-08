@@ -25,38 +25,38 @@ type Anime struct {
 // Rating is presentation of a document from the `Rating` collection
 type Rating struct {
 	ID          AnimeID `bson:"_id"`
-	Five        uint32
-	Four        uint32
-	Three       uint32
-	Two         uint32
-	One         uint32
-	InFavorites uint32
-	Average     float64
+	Five        uint32  `bson:"Five"`
+	Four        uint32  `bson:"Four"`
+	Three       uint32  `bson:"Three"`
+	Two         uint32  `bson:"Two"`
+	One         uint32  `bson:"One"`
+	InFavorites uint32  `bson:"InVavorites"`
+	Average     float64 `bson:"Average"`
 }
 
 // User is presentation of a document from the `User` collection
 type User struct {
-	ID        UserID `bson:"_id"`
-	Nickname  string
-	Role      string
-	Favorites []AnimeID
-	Watched   []AnimeID
-	Added     []AnimeID
+	ID        UserID    `bson:"_id"`
+	Nickname  string    `bson:"Nickname"`
+	Role      string    `bson:"Role"`
+	Favorites []AnimeID `bson:"Favorites"`
+	Watched   []AnimeID `bson:"Watched"`
+	Added     []AnimeID `bson:"Added"`
 	Rated     []struct {
-		ID   AnimeID `bson:"AnimeId"`
-		Rate AnimeRating
-	}
+		ID   AnimeID     `bson:"AnimeId"`
+		Rate AnimeRating `bson:"Rate"`
+	} `bson:"Rated"`
 }
 
 // Comments is presentation of a document from the `Comments` collection
 type Comments struct {
-	ID       AnimeID `bson:"_id"`
-	Comments []Comment
+	ID       AnimeID   `bson:"_id"`
+	Comments []Comment `bson:"Comments"`
 }
 
 // Comment is a comment struct
 type Comment struct {
-	ID      primitive.ObjectID `bson:"id"`
+	ID      primitive.ObjectID `bson:"_id"`
 	UserID  UserID             `bson:"UserId"`
 	Message string             `bson:"Message"`
 }

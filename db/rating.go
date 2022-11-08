@@ -111,7 +111,7 @@ func addRate(id AnimeID, rate AnimeRating) (err error) {
 	}
 
 	rating := &dbtypes.Rating{}
-	err = ratingCollection.FindOne(ctx, bson.M{"_id": id}).Decode(rating)
+	err = ratingCollection.FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$inc": bson.M{rateName: 1}}).Decode(rating)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return &inerr.ErrAnimeNotFound{id}
@@ -123,7 +123,6 @@ func addRate(id AnimeID, rate AnimeRating) (err error) {
 		float64(rating.Five+rating.Four+rating.Three+rating.Two+rating.One+1)
 
 	_, err = ratingCollection.UpdateByID(ctx, id, bson.M{
-		"$inc": bson.M{rateName: 1},
 		"$set": bson.M{"Average": average},
 	})
 

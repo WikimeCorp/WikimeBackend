@@ -20,7 +20,7 @@ func createCommentsDoc(animeID AnimeID) error {
 	if !anime {
 		return &inerr.ErrAnimeNotFound{animeID}
 	}
-	_, err = commentsCollection.InsertOne(ctx, dbtypes.Comments{ID: animeID})
+	_, err = commentsCollection.InsertOne(ctx, dbtypes.Comments{ID: animeID, Comments: []dbtypes.Comment{}})
 	return err
 }
 
