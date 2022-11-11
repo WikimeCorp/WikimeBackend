@@ -27,11 +27,6 @@ func AddAnime(anime *dbtypes.Anime) (ansAnimeID AnimeID, err error) {
 		return
 	}
 
-	err = addToAdded(anime.Author, newAnime.ID)
-	if err != nil {
-		return
-	}
-
 	err = createRatingDoc(newAnime.ID)
 	if err != nil {
 		return

@@ -25,7 +25,7 @@ var Config config
 
 func init() {
 	Config.MongoURL = "mongodb://localhost:27017"
-	Config.DataBaseName = "Wikime_test"
+	Config.DataBaseName = "Wikime_test_performance" //"Wikime_test"
 
 	configPath := flag.String("configPath", "./config/.env", "Path to config file.")
 	flag.StringVar(&Config.Addr, "addr", Config.Addr, "")

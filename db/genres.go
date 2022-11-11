@@ -17,6 +17,7 @@ func initGenres() ([]string, error) {
 }
 
 func CheckGenres(genres []string) (res bool, badGenres []string) {
+	res = true
 	if len(genres) > len(genresList) {
 		return false, []string{fmt.Sprintf("Too many genres, max %d", len(genresList))}
 	}

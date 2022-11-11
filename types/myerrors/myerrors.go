@@ -23,6 +23,14 @@ func (e *ErrAnimeNotFound) Error() string {
 	return fmt.Sprintf("anime with id %d not found", e.AnimeID)
 }
 
+type ErrWrongGenres struct {
+	Genres []string
+}
+
+func (e *ErrWrongGenres) Error() string {
+	return "wrong genres"
+}
+
 var ErrOuterTokenIsWrong = errors.New("token of outer service is wrong")
 
 var ErrNoDocumentsFromDB = errors.New("db returned 0 documents")

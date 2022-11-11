@@ -28,15 +28,21 @@ func setupRouter() *mux.Router {
 
 	// Anime section
 	animeRouter := router.PathPrefix("/anime").Subrouter()
+	animeRouter.HandleFunc("",
+		anime.GetAnimesHangler(),
+	).Methods("GET")
 	animeRouter.HandleFunc("/{anime_id:[0-9]+}",
 		anime.GetAnimeByIDHandler(),
+	).Methods("GET")
+	animeRouter.HandleFunc("/list",
+		anime.GetAnimeByListIDHandler(),
 	).Methods("GET")
 	animeRouter.HandleFunc("",
 		anime.CreateAnimeHandler(),
 	).Methods("POST") // Add auth check
-	animeRouter.HandleFunc("/list",
-		anime.GetAnimeByListIDHandler(),
-	).Methods("GET")
+	animeRouter.HandleFunc("/{anime_id:[0-9]+}",
+		anime.SetAverageEndpoint,
+	).Methods("PUT")
 
 	// Images section
 	// animeRouter.PathPrefix("/{anime_id:[0-9]+}/poster").Handler(

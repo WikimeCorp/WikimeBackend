@@ -5,6 +5,7 @@ import (
 
 	"github.com/WikimeCorp/WikimeBackend/db"
 	"github.com/WikimeCorp/WikimeBackend/types"
+	"github.com/WikimeCorp/WikimeBackend/types/myerrors"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -80,4 +81,23 @@ func GetAnimesByListID(animeIDList []types.AnimeID) ([]*Anime, error) {
 	err := errg.Wait()
 
 	return ans, err
+}
+
+func SetAverage(anime types.AnimeID, average float64) error {
+	err := db.SetAverage(anime, average)
+	return err
+}
+
+func GetAnimeSortedByRating(genres []string) ([]types.AnimeID, error) {
+	ans, badGenres := db.CheckGenres(genres)
+	if ans == false {
+		return nil, &myerrors.ErrWrongGenres{badGenres}
+	}
+
+	animeIDs, err := db.GetAnimeIDsSortedByRating(genres)
+	if err != nil {
+		return nil, err
+	}
+
+	return animeIDs, nil
 }

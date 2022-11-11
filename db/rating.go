@@ -128,3 +128,16 @@ func addRate(id AnimeID, rate AnimeRating) (err error) {
 
 	return err
 }
+
+// NEED DELETE
+func SetAverage(anime AnimeID, average float64) error {
+	_, err := ratingCollection.UpdateByID(ctx, anime, bson.M{"$set": bson.M{"Average": average}})
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return &inerr.ErrAnimeNotFound{anime}
+		}
+		return err
+	}
+
+	return err
+}

@@ -13,7 +13,7 @@ type AnimeCreateRequest struct {
 	Description string   `validate:"required" json:"description"`
 	Director    string   `validate:"required" json:"director"`
 	Genres      []string `validate:"required" json:"genres"`
-	ReleaseDate int64    `validate:"required" json:"releaseDate"`
+	ReleaseDate *int64   `validate:"required" json:"releaseDate"`
 }
 
 func (a *AnimeCreateRequest) NewAnimeModel() *anime.Anime {
@@ -21,9 +21,9 @@ func (a *AnimeCreateRequest) NewAnimeModel() *anime.Anime {
 		Title:       a.Title,
 		OriginTitle: a.OriginTitle,
 		Description: a.Description,
-		Director:    a.Description,
+		Director:    a.Director,
 		Genres:      a.Genres,
-		ReleaseDate: time.Unix(a.ReleaseDate, 0),
+		ReleaseDate: time.Unix(*a.ReleaseDate, 0),
 	}
 }
 
@@ -37,4 +37,9 @@ type AnimeByListIDRequest struct {
 
 type AnimeByListIDResponce struct {
 	Animes []*anime.Anime `json:"animes"`
+}
+
+type GetAnimesRequest struct {
+	SortBy string   `json:"sortBy" validate:"required"`
+	Genres []string `json:"genres" validate:"required"`
 }

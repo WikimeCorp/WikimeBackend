@@ -1,13 +1,14 @@
 package anime
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/WikimeCorp/WikimeBackend/applogic/anime"
 	"github.com/WikimeCorp/WikimeBackend/dependencies"
@@ -16,9 +17,8 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	apiErrors "github.com/WikimeCorp/WikimeBackend/restapi/errors"
+	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/other"
 	"github.com/gorilla/mux"
-
-	"golang.org/x/sync/errgroup"
 )
 
 func getAnimeListEndpoint(w http.ResponseWriter, req *http.Request) {
@@ -50,7 +50,6 @@ func GetAnimeByIDHandler() func(http.ResponseWriter, *http.Request) {
 
 func createAnimeEndpoint(w http.ResponseWriter, req *http.Request) {
 	animeReq := &AnimeCreateRequest{}
-
 	err := json.NewDecoder(req.Body).Decode(animeReq)
 
 	if err != nil {
@@ -110,45 +109,7 @@ func getAnimeByListID(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	errg, ctx := errgroup.WithContext(context.Background())
-
-	results := make(chan types.Pair[int, *anime.Anime])
-
-	for idx, id := range animeListReq.IDs {
-		idx := idx
-		id := id
-		errg.Go(func() error {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-				animeAns, err := anime.GetAnimeByID(id)
-				if err != nil {
-					return err
-				}
-
-				select {
-				case results <- types.Pair[int, *anime.Anime]{First: idx, Second: animeAns}:
-					return nil
-				case <-ctx.Done():
-					return ctx.Err()
-				}
-			}
-		})
-	}
-
-	go func() {
-		errg.Wait()
-		close(results)
-	}()
-
-	animeListRes := AnimeByListIDResponce{Animes: make([]*anime.Anime, len(animeListReq.IDs))}
-
-	for result := range results {
-		animeListRes.Animes[result.First] = result.Second
-	}
-
-	err = errg.Wait()
+	animeList, err := anime.GetAnimesByListID(animeListReq.IDs)
 
 	var errAnimeNotFound *myerrors.ErrAnimeNotFound
 
@@ -166,6 +127,7 @@ func getAnimeByListID(w http.ResponseWriter, req *http.Request) {
 
 	}
 
+	animeListRes := AnimeByListIDResponce{Animes: animeList}
 	ans, _ := json.Marshal(animeListRes)
 	w.Write(ans)
 }
@@ -173,4 +135,64 @@ func getAnimeByListID(w http.ResponseWriter, req *http.Request) {
 // GetAnimeByListIDHandler ...
 func GetAnimeByListIDHandler() func(http.ResponseWriter, *http.Request) {
 	return getAnimeByListID
+}
+
+func getAnimesEndpoint(w http.ResponseWriter, req *http.Request) {
+	requestData := GetAnimesRequest{}
+
+	err := other.CheckRequestJSONData(w, req, &requestData)
+	if err != nil {
+		return
+	}
+
+	animesIDs := make([]types.AnimeID, 0)
+
+	if requestData.SortBy == "rating" {
+		start := time.Now()
+		animesIDs, err = anime.GetAnimeSortedByRating(requestData.Genres)
+		fmt.Println(time.Since(start))
+	} else {
+		apiErrors.SetErrorInResponce(
+			apiErrors.ErrBadRequest.SetNewMessage("Cannot sort by"+requestData.SortBy),
+			w,
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if err != nil {
+		switch cErr := err.(type) {
+		case *myerrors.ErrWrongGenres:
+			apiErrors.SetErrorInResponce(
+				apiErrors.ErrBadRequest.SetNewMessage("Bad genres: "+strings.Join(cErr.Genres, ", ")),
+				w,
+				http.StatusBadRequest,
+			)
+			return
+		}
+	}
+
+	ansStruct := struct {
+		AnimeIDs []types.AnimeID `json:"animeIDs"`
+	}{animesIDs}
+	ans, _ := json.Marshal(ansStruct)
+	w.Write(ans)
+
+}
+
+func GetAnimesHangler() func(http.ResponseWriter, *http.Request) {
+	return getAnimesEndpoint
+}
+
+func SetAverageEndpoint(w http.ResponseWriter, req *http.Request) {
+	animeID, _ := strconv.Atoi(mux.Vars(req)["anime_id"])
+	reqJson := struct {
+		Average float64 `bson:"average"`
+	}{}
+	_ = json.NewDecoder(req.Body).Decode(&reqJson)
+	err := anime.SetAverage(types.AnimeID(animeID), reqJson.Average)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+	}
+
 }

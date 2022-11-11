@@ -2,7 +2,7 @@ package db
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"time"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
@@ -52,7 +52,6 @@ func CheckAnime(id AnimeID) (bool, error) {
 }
 
 func EditAnime(animeObjPtr *dbtypes.Anime) error {
-	log.Printf("EditAime %+v", animeObjPtr)
 	err := animeCollection.FindOneAndReplace(ctx, bson.M{"_id": animeObjPtr.ID}, &animeObjPtr).Err()
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -99,6 +98,85 @@ func GetAnimes(genres []string, sortBy string, order int) (ansList []*dbtypes.An
 	return ansList, err
 }
 
-func GetAnimeIDsSortedByRating(genres []string) {
+func GetAnimeIDsSortedByRating(genres []string) ([]AnimeID, error) {
+	matchAgg := bson.D{
+		{Key: "$match",
+			Value: bson.D{},
+		},
+	}
+	fmt.Println("Genres: ", genres)
+	if len(genres) != 0 {
+		genresAsDObjects := make([]bson.D, len(genres))
 
+		for idx, genre := range genres {
+			genresAsDObjects[idx] = bson.D{{"Genres", genre}}
+		}
+
+		genresAObject := genresAsDObjects
+
+		matchAgg = bson.D{
+			{Key: "$match",
+				Value: bson.D{
+					{Key: "$and",
+						Value: genresAObject,
+					},
+				},
+			},
+		}
+	}
+	fmt.Println("aggr ", matchAgg)
+	pipeline := []bson.D{
+		matchAgg,
+		bson.D{
+			{"$lookup",
+				bson.D{
+					{"from", "Rating"},
+					{"localField", "_id"},
+					{"foreignField", "_id"},
+					{"as", "RateTmp"},
+				},
+			},
+		},
+		bson.D{
+			{"$set",
+				bson.D{
+					{"Average",
+						bson.D{
+							{"$getField",
+								bson.D{
+									{"field", "Average"},
+									{"input", bson.D{{"$first", "$RateTmp"}}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		bson.D{{"$unset", "RateTmp"}},
+		bson.D{{"$sort", bson.D{{"Average", -1}}}},
+	}
+
+	cursor, err := animeCollection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]AnimeID, 0)
+
+	for cursor.Next(ctx) {
+
+		elem := struct {
+			ID AnimeID `bson:"_id"`
+		}{}
+
+		err := cursor.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, elem.ID)
+	}
+
+	return results, nil
 }

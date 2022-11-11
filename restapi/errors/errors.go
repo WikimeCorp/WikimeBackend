@@ -33,6 +33,7 @@ const (
 	animeNotFound
 	internalServerError
 	invalidForm
+	badRequest
 )
 
 var ErrBadJSONStruct = ErrBaseEndpointError{Message: "Bad json", ErrorCode: badJSONStruct}
@@ -45,6 +46,7 @@ var ErrNotFound = ErrBaseEndpointError{Message: "Page not found", ErrorCode: not
 var ErrAnimeNotFound = ErrBaseEndpointError{Message: "Anime not found", ErrorCode: animeNotFound}
 var ErrInternalServerError = ErrBaseEndpointError{Message: "Internal server error", ErrorCode: internalServerError}
 var ErrBadValidate = ErrBaseEndpointError{Message: "Form invalid", ErrorCode: invalidForm}
+var ErrBadRequest = ErrBaseEndpointError{Message: "Bad request", ErrorCode: badRequest}
 
 func SetErrorInResponce(err *ErrBaseEndpointError, w http.ResponseWriter, status int) {
 	w.WriteHeader(status)
