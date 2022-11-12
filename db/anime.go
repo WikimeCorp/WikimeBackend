@@ -2,9 +2,9 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
+	dbrequests "github.com/WikimeCorp/WikimeBackend/db/db_requests"
 	. "github.com/WikimeCorp/WikimeBackend/types"
 	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
 	inerr "github.com/WikimeCorp/WikimeBackend/types/myerrors"
@@ -33,6 +33,7 @@ func createAnimeDoc(title string, originTitle string, author UserID) (*dbtypes.A
 		Title:       title,
 		OriginTitle: originTitle,
 		DateAdded:   time.Now(),
+		Rating:      &dbtypes.Rating{},
 	}
 	_, err = animeCollection.InsertOne(ctx, anime)
 
@@ -99,65 +100,8 @@ func GetAnimes(genres []string, sortBy string, order int) (ansList []*dbtypes.An
 }
 
 func GetAnimeIDsSortedByRating(genres []string) ([]AnimeID, error) {
-	matchAgg := bson.D{
-		{Key: "$match",
-			Value: bson.D{},
-		},
-	}
-	fmt.Println("Genres: ", genres)
-	if len(genres) != 0 {
-		genresAsDObjects := make([]bson.D, len(genres))
 
-		for idx, genre := range genres {
-			genresAsDObjects[idx] = bson.D{{"Genres", genre}}
-		}
-
-		genresAObject := genresAsDObjects
-
-		matchAgg = bson.D{
-			{Key: "$match",
-				Value: bson.D{
-					{Key: "$and",
-						Value: genresAObject,
-					},
-				},
-			},
-		}
-	}
-	fmt.Println("aggr ", matchAgg)
-	pipeline := []bson.D{
-		matchAgg,
-		bson.D{
-			{"$lookup",
-				bson.D{
-					{"from", "Rating"},
-					{"localField", "_id"},
-					{"foreignField", "_id"},
-					{"as", "RateTmp"},
-				},
-			},
-		},
-		bson.D{
-			{"$set",
-				bson.D{
-					{"Average",
-						bson.D{
-							{"$getField",
-								bson.D{
-									{"field", "Average"},
-									{"input", bson.D{{"$first", "$RateTmp"}}},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{{"$unset", "RateTmp"}},
-		bson.D{{"$sort", bson.D{{"Average", -1}}}},
-	}
-
-	cursor, err := animeCollection.Aggregate(ctx, pipeline)
+	cursor, err := animeCollection.Aggregate(ctx, dbrequests.GetAnimesSortedByRatingWithGenres(genres))
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +118,6 @@ func GetAnimeIDsSortedByRating(genres []string) ([]AnimeID, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		results = append(results, elem.ID)
 	}
 

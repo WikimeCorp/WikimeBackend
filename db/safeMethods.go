@@ -3,10 +3,10 @@ package db
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
 	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
-	inerr "github.com/WikimeCorp/WikimeBackend/types/myerrors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,16 +21,17 @@ func AddAnime(anime *dbtypes.Anime) (ansAnimeID AnimeID, err error) {
 
 	anime.ID = newAnime.ID
 	anime.DateAdded = newAnime.DateAdded
+	anime.Rating = newAnime.Rating
 
 	err = EditAnime(anime)
 	if err != nil {
 		return
 	}
 
-	err = createRatingDoc(newAnime.ID)
-	if err != nil {
-		return
-	}
+	// err = createRatingDoc(newAnime.ID)
+	// if err != nil {
+	// 	return
+	// }
 
 	err = createCommentsDoc(newAnime.ID)
 	if err != nil {
@@ -78,35 +79,41 @@ func Rate(animeID AnimeID, userID UserID, rate AnimeRating) error {
 //
 // It must be guaranteed that the user with the `id` exists
 func DeleteAnimeFromFavorites(animeID AnimeID, userID UserID) error {
-	ans, err := ratingCollection.UpdateByID(ctx, animeID, bson.M{"$inc": bson.M{"InFavorites": -1}})
-	if err != nil {
-		return err
-	}
+	// NEED ADD CHECK FOR InFavorites COUNT AND DELETING FROM User.Facorites
+	log.Fatal("Not implemented")
+	return nil
+	// ans, err := ratingCollection.UpdateByID(ctx, animeID, bson.M{"$inc": bson.M{"InFavorites": -1}})
+	// if err != nil {
+	// 	return err
+	// }
 
-	if ans.MatchedCount == 0 {
-		return &inerr.ErrAnimeNotFound{AnimeID: animeID}
-	}
+	// if ans.MatchedCount == 0 {
+	// 	return &inerr.ErrAnimeNotFound{AnimeID: animeID}
+	// }
 
-	err = deleteFromFavorites(userID, animeID)
+	// err = deleteFromFavorites(userID, animeID)
 
-	return err
+	// return err
 }
 
 // AddAnimeToFavorites adding anime to the list of 'favorites' of a user with the ID 'User ID`
 //
 // It must be guaranteed that the user with the `id` exists
 func AddAnimeToFavorites(animeID AnimeID, userID UserID) error {
-	ans, err := ratingCollection.UpdateByID(ctx, animeID, bson.M{"$inc": bson.M{"InFavorites": 1}})
+	// NEED ADD CHECK FOR InFavorites COUNT AND ADDING TO User.Facorites
+	log.Fatal("Not implemented")
+	return nil
+	// ans, err := ratingCollection.UpdateByID(ctx, animeID, bson.M{"$inc": bson.M{"InFavorites": 1}})
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	if ans.MatchedCount == 0 {
-		return &inerr.ErrAnimeNotFound{AnimeID: animeID}
-	}
+	// if ans.MatchedCount == 0 {
+	// 	return &inerr.ErrAnimeNotFound{AnimeID: animeID}
+	// }
 
-	err = addToFavorites(userID, animeID)
+	// err = addToFavorites(userID, animeID)
 
-	return err
+	// return err
 }
