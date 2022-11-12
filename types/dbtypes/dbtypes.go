@@ -20,6 +20,7 @@ type Anime struct {
 	DateAdded   time.Time `bson:"DateAdded"`
 	ReleaseDate time.Time `bson:"ReleaseDate"`
 	Author      UserID    `bson:"Author"`
+	Rating      *Rating   `bson:"Rating"`
 }
 
 // Rating is presentation of a document from the `Rating` collection

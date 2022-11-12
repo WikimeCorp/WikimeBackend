@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/WikimeCorp/WikimeBackend/applogic/auth"
@@ -14,6 +15,7 @@ import (
 // SetJSONHeader is middleware, that add "Context-Type" header as "application/json"
 func SetJSONHeader(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.URL)
 		w.Header().Set("Content-Type", "application/json")
 		h.ServeHTTP(w, r)
 	})

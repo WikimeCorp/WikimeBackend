@@ -12,7 +12,6 @@ import (
 
 var (
 	animeCollection    *mongo.Collection
-	ratingCollection   *mongo.Collection
 	genresCollection   *mongo.Collection
 	commentsCollection *mongo.Collection
 	googleCollection   *mongo.Collection
@@ -40,7 +39,6 @@ func init() {
 	wikimeDB := client.Database(config.DataBaseName)
 
 	animeCollection = wikimeDB.Collection("Anime")
-	ratingCollection = wikimeDB.Collection("Rating")
 	genresCollection = wikimeDB.Collection("Genres")
 	commentsCollection = wikimeDB.Collection("Comments")
 	googleCollection = wikimeDB.Collection("Google")
