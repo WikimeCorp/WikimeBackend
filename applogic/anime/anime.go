@@ -25,6 +25,7 @@ func GetAnimeByID(animeID types.AnimeID) (*Anime, error) {
 		DateAdded:   anime.DateAdded,
 		ReleaseDate: anime.ReleaseDate,
 		Author:      anime.Author,
+		Rating:      Rating(*anime.Rating),
 	}
 	return animeAns, nil
 }

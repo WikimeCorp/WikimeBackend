@@ -25,13 +25,12 @@ type Anime struct {
 
 // Rating is presentation of a document from the `Rating` collection
 type Rating struct {
-	ID          AnimeID `bson:"_id"`
 	Five        uint32  `bson:"Five"`
 	Four        uint32  `bson:"Four"`
 	Three       uint32  `bson:"Three"`
 	Two         uint32  `bson:"Two"`
 	One         uint32  `bson:"One"`
-	InFavorites uint32  `bson:"InVavorites"`
+	InFavorites uint32  `bson:"InFavorites"`
 	Average     float64 `bson:"Average"`
 }
 
