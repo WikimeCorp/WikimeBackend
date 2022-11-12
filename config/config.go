@@ -11,8 +11,8 @@ import (
 
 type config struct {
 	PathToPhoto      string `config:"PHOTO_PATH"`
-	Addr             string `config:"ADDR"`
-	Port             string `config:"PORT"`
+	Addr             string `config:"APP_IP"`
+	Port             string `config:"APP_PORT"`
 	MongoURL         string `config:"MONGO_URL"`
 	DataBaseName     string `config:"DB_NAME"`
 	VKAPIVersion     string `config:"VKAPIVersion"`

@@ -1,28 +1,19 @@
 package dbrequests
 
 import (
-	"fmt"
-
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 // GetAnimesSortedByRatingWithGenres generate mongodb request for *see func name*
 func GetAnimesSortedByRatingWithGenres(genres []string) bson.A {
 
-	genresArray := bson.A{bson.D{}}
+	genresArray := bson.A{}
 	if len(genres) != 0 {
-		//genresD := make([]bson.D, len(genres))
 		for _, genre := range genres {
-			//genresD[idx] = bson.D{{"Genres", genre}}
 			genresArray = append(genresArray, bson.D{{"Genres", genre}})
 		}
-		//genresArray = genresD
-		fmt.Println(genresArray)
-		fmt.Println(bson.A{
-			bson.D{{"Genres", "Комедия"}},
-			bson.D{{"Genres", "Детектив"}},
-		})
-
+	} else {
+		genresArray = append(genresArray, bson.D{})
 	}
 
 	ans := bson.A{
