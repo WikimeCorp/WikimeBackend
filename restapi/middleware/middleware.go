@@ -21,8 +21,8 @@ func SetJSONHeader(h http.Handler) http.Handler {
 	})
 }
 
-// NeedAuthorization check authorization header and check JWT token valid
-func NeedAuthorization(h http.Handler) http.Handler {
+// NeedAuthentication check authorization header and check JWT token valid
+func NeedAuthentication(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 

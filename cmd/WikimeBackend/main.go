@@ -27,7 +27,7 @@ func setupRouter() *mux.Router {
 		http.HandlerFunc(user.GetUserHandler()),
 	).Methods("GET")
 	userRouter.Handle("/",
-		middleware.NeedAuthorization(http.HandlerFunc(user.GetCurrentUserHandler())),
+		middleware.NeedAuthentication(http.HandlerFunc(user.GetCurrentUserHandler())),
 	).Methods("GET")
 
 	// Anime section
@@ -55,10 +55,10 @@ func setupRouter() *mux.Router {
 
 	// Images section
 	router.PathPrefix("/images/").Handler(
-		http.StripPrefix(
+		middleware.SetJSONHeader(http.StripPrefix(
 			"/images",
 			http.FileServer(http.Dir(path.Join(config.Config.ImagePathDisk, config.Config.ImagesPathURI))),
-		),
+		)),
 	).Methods("GET")
 	animeRouter.HandleFunc(
 		"/{anime_id:[0-9]+}/image",

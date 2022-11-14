@@ -10,23 +10,21 @@ import (
 )
 
 type config struct {
-	PathToPhoto      string `config:"PHOTO_PATH"`
-	Addr             string `config:"APP_IP"`
-	Port             string `config:"APP_PORT"`
-	MongoURL         string `config:"MONGO_URL"`
-	DataBaseName     string `config:"DB_NAME"`
-	VKAPIVersion     string `config:"VKAPIVersion"`
-	SecretKeyForHash string `config:"SECRET_KEY_HASH"`
-	JWTLifeTime      string `config:"JWT_LIFE_TIME"`
-	ImagesPath       string `config:"IMAGES_PATH"`
+	ImagePathDisk       string `config:"IMAGES_PATH_DISK"`
+	Addr                string `config:"APP_IP"`
+	Port                string `config:"APP_PORT"`
+	MongoURL            string `config:"MONGO_URL"`
+	DataBaseName        string `config:"DB_NAME"`
+	VKAPIVersion        string `config:"VKAPIVersion"`
+	SecretKeyForHash    string `config:"SECRET_KEY_HASH"`
+	JWTLifeTime         string `config:"JWT_LIFE_TIME"`
+	ImagesPathURI       string `config:"IMAGES_PATH_URI"`
+	MaxUploadedFileSize int64  `config:"MAX_UPLOADED_FILE_SIZE"`
 }
 
 var Config config
 
 func init() {
-	Config.MongoURL = "mongodb://localhost:27017"
-	Config.DataBaseName = "Wikime_test_performance" //"Wikime_test"
-
 	configPath := flag.String("configPath", "./config/.env", "Path to config file.")
 	flag.StringVar(&Config.Addr, "addr", Config.Addr, "")
 	flag.StringVar(&Config.Port, "port", Config.Port, "Port")
