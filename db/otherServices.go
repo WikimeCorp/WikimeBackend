@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
+	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
 	"github.com/WikimeCorp/WikimeBackend/types/myerrors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -25,6 +26,7 @@ func CheckVkUserInDB(id VKUserID) (UserID, error) {
 }
 
 func AddVkUser(vkID VKUserID, innerID UserID) error {
-	_, err := vkCollection.InsertOne(ctx, bson.D{{"_id", vkID}, {"InnerId", innerID}})
+	user := dbtypes.AuthUser{ID: vkID, InnerID: innerID}
+	_, err := vkCollection.InsertOne(ctx, user)
 	return err
 }

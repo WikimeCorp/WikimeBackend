@@ -61,3 +61,8 @@ type Comment struct {
 	UserID  UserID             `bson:"UserId"`
 	Message string             `bson:"Message"`
 }
+
+type AuthUser struct {
+	ID      VKUserID `bson:"_id"`
+	InnerID UserID   `bson:"InnerID"`
+}
