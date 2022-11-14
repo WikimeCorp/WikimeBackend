@@ -8,6 +8,7 @@ import (
 	"github.com/WikimeCorp/WikimeBackend/config"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/anime"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/auth"
+	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/comments"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/images"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/other"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/user"
@@ -68,6 +69,17 @@ func setupRouter() *mux.Router {
 		"/{anime_id:[0-9]+}/poster",
 		images.SetPosterHandler(),
 	).Methods("POST")
+
+	// Comment section
+	commentsRouter := apiRouter.PathPrefix("/comments").Subrouter()
+	commentsRouter.HandleFunc(
+		"",
+		comments.CreateAnimeEndpoint,
+	).Methods("POST")
+	commentsRouter.HandleFunc(
+		"/{anime_id:[0-9]+}",
+		comments.GetCommentByID,
+	).Methods("GET")
 
 	// Auth section
 	authRouter := apiRouter.PathPrefix("/auth/").Subrouter()

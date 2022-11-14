@@ -4,6 +4,7 @@ type UserID uint32
 type AnimeID uint32
 type AnimeRating uint8
 type VKUserID uint32
+type CommentID string
 
 type SomeID interface {
 	UserID | AnimeID

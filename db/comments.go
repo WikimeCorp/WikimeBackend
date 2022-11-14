@@ -27,21 +27,23 @@ func createCommentsDoc(animeID AnimeID) error {
 // AddComment adds a comment
 //
 // It must be guaranteed that the user with the `id` exists
-func AddComment(animeID AnimeID, userID UserID, text string) error {
+func AddComment(animeID AnimeID, userID UserID, text string) (*CommentID, error) {
+	comID := primitive.NewObjectID()
 	ans, err := commentsCollection.UpdateByID(ctx, animeID,
 		bson.M{
 			"$push": bson.M{
-				"Comments": dbtypes.Comment{primitive.NewObjectID(), userID, text},
+				"Comments": dbtypes.Comment{comID, userID, text},
 			},
 		},
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if ans.MatchedCount == 0 {
-		return &inerr.ErrAnimeNotFound{animeID}
+		return nil, &inerr.ErrAnimeNotFound{animeID}
 	}
-	return nil
+	tmp := CommentID(comID.Hex())
+	return &tmp, nil
 }
 
 // DeleteCommentFromAnime removes comment from anime
@@ -87,11 +89,11 @@ func DeleteCommentByID(commentID primitive.ObjectID) error {
 }
 
 // GetComments returns anime comments with the id `animeid`
-func GetComments(animeID AnimeID) error {
+func GetComments(animeID AnimeID) ([]dbtypes.Comment, error) {
 	comments := &dbtypes.Comments{}
 	err := commentsCollection.FindOne(ctx, bson.M{"_id": animeID}).Decode(comments)
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		return &inerr.ErrAnimeNotFound{AnimeID: animeID}
+		return nil, &inerr.ErrAnimeNotFound{AnimeID: animeID}
 	}
-	return err
+	return comments.Comments, nil
 }
