@@ -26,6 +26,7 @@ func GetAnimeByID(animeID types.AnimeID) (*Anime, error) {
 		ReleaseDate: anime.ReleaseDate,
 		Author:      anime.Author,
 		Rating:      Rating(*anime.Rating),
+		Poster:      anime.Poster,
 	}
 	return animeAns, nil
 }
@@ -101,4 +102,10 @@ func GetAnimeSortedByRating(genres []string) ([]types.AnimeID, error) {
 	}
 
 	return animeIDs, nil
+}
+
+// CheckAnime returns whether the anime exists. Can be true or false
+func CheckAnime(animeID types.AnimeID) (bool, error) {
+	ans, err := db.CheckAnime(animeID)
+	return ans, err
 }

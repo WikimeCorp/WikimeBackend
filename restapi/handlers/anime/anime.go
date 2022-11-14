@@ -187,10 +187,15 @@ func GetAnimesHangler() func(http.ResponseWriter, *http.Request) {
 func SetAverageEndpoint(w http.ResponseWriter, req *http.Request) {
 	animeID, _ := strconv.Atoi(mux.Vars(req)["anime_id"])
 	reqJson := struct {
-		Average float64 `bson:"average"`
+		Average *float64 `validate:"required" json:"average"`
 	}{}
 	_ = json.NewDecoder(req.Body).Decode(&reqJson)
-	err := anime.SetAverage(types.AnimeID(animeID), reqJson.Average)
+	err := other.CheckRequestJSONData(w, req, &reqJson)
+	if err != nil {
+		return
+	}
+
+	err = anime.SetAverage(types.AnimeID(animeID), *reqJson.Average)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 	}

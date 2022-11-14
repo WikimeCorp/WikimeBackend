@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/WikimeCorp/WikimeBackend/config"
 )
 
 type ErrBaseEndpointError struct {
@@ -34,6 +37,8 @@ const (
 	internalServerError
 	invalidForm
 	badRequest
+	fileTooBig
+	badFileFormat
 )
 
 var ErrBadJSONStruct = ErrBaseEndpointError{Message: "Bad json", ErrorCode: badJSONStruct}
@@ -47,6 +52,14 @@ var ErrAnimeNotFound = ErrBaseEndpointError{Message: "Anime not found", ErrorCod
 var ErrInternalServerError = ErrBaseEndpointError{Message: "Internal server error", ErrorCode: internalServerError}
 var ErrBadValidate = ErrBaseEndpointError{Message: "Form invalid", ErrorCode: invalidForm}
 var ErrBadRequest = ErrBaseEndpointError{Message: "Bad request", ErrorCode: badRequest}
+var ErrFileTooBig = ErrBaseEndpointError{
+	Message:   "File too big. Max size is " + strconv.Itoa(int(config.Config.MaxUploadedFileSize)),
+	ErrorCode: fileTooBig,
+}
+var ErrBadImageFormat = ErrBaseEndpointError{
+	Message:   "The provided file format is not allowed. Upload a JPEG or PNG.",
+	ErrorCode: badFileFormat,
+}
 
 func SetErrorInResponce(err *ErrBaseEndpointError, w http.ResponseWriter, status int) {
 	w.WriteHeader(status)

@@ -13,22 +13,13 @@ type Anime struct {
 	OriginTitle string        `json:"originTitle"`
 	Genres      []string      `json:"genres"`
 	Description string        `json:"description"`
+	Poster      *string       `json:"poster"`
 	Images      []string      `json:"images"`
 	Director    string        `json:"director"`
 	DateAdded   time.Time     `json:"dataAded"`
 	ReleaseDate time.Time     `json:"releaseDate"`
 	Author      types.UserID  `json:"author"`
 	Rating      Rating        `json:"rating"`
-}
-
-type Rating struct {
-	Five        uint32  `json:"five"`
-	Four        uint32  `json:"four"`
-	Three       uint32  `json:"three"`
-	Two         uint32  `json:"two"`
-	One         uint32  `json:"one"`
-	InFavorites uint32  `json:"inFavorites"`
-	Average     float64 `json:"average"`
 }
 
 func (a *Anime) NewDBModel() *dbtypes.Anime {
@@ -43,4 +34,14 @@ func (a *Anime) NewDBModel() *dbtypes.Anime {
 		Author:      a.Author,
 		Images:      []string{},
 	}
+}
+
+type Rating struct {
+	Five        uint32  `json:"five"`
+	Four        uint32  `json:"four"`
+	Three       uint32  `json:"three"`
+	Two         uint32  `json:"two"`
+	One         uint32  `json:"one"`
+	InFavorites uint32  `json:"inFavorites"`
+	Average     float64 `json:"average"`
 }

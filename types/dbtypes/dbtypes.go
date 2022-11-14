@@ -14,6 +14,7 @@ type Anime struct {
 	OriginTitle string    `bson:"OriginTitle"`
 	Genres      []string  `bson:"Genres"`
 	Description string    `bson:"Description"`
+	Poster      *string   `bson:"Poster"`
 	Images      []string  `bson:"Images"`
 	URLs        []string  `bson:"URLs"`
 	Director    string    `bson:"Director"`
