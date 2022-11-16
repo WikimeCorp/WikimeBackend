@@ -100,7 +100,6 @@ func GetAnimes(genres []string, sortBy string, order int) (ansList []*dbtypes.An
 }
 
 func GetAnimeIDsSortedByRating(genres []string) ([]AnimeID, error) {
-
 	cursor, err := animeCollection.Aggregate(ctx, dbrequests.GetAnimesSortedByRatingWithGenres(genres))
 	if err != nil {
 		return nil, err
