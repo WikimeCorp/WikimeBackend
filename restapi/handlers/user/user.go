@@ -9,6 +9,7 @@ import (
 	"github.com/WikimeCorp/WikimeBackend/applogic/user"
 	"github.com/WikimeCorp/WikimeBackend/dependencies"
 	apiErrors "github.com/WikimeCorp/WikimeBackend/restapi/errors"
+	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/other"
 	"github.com/WikimeCorp/WikimeBackend/types"
 	"github.com/WikimeCorp/WikimeBackend/types/myerrors"
 	"github.com/gorilla/mux"
@@ -35,6 +36,21 @@ func getUserEndpoint(w http.ResponseWriter, req *http.Request) {
 // GetUserHandler return get user handler
 func GetUserHandler() func(w http.ResponseWriter, req *http.Request) {
 	return getUserEndpoint
+}
+
+func ChangeNicknameEndpoint(w http.ResponseWriter, req *http.Request) {
+	userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+
+	reqData := ChangeNicknameRequest{}
+	err := other.CheckRequestJSONData(w, req, &reqData)
+	if err != nil {
+		return
+	}
+	err = user.SetNickname(userID, reqData.Nickname)
+	if err != nil {
+		apiErrors.SetErrorInResponce(&apiErrors.ErrInternalServerError, w, http.StatusInternalServerError)
+		return
+	}
 }
 
 func getCurrentUserEndpoint(w http.ResponseWriter, req *http.Request) {

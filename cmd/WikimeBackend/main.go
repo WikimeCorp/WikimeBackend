@@ -23,13 +23,17 @@ func setupRouter() *mux.Router {
 	apiRouter := mux.NewRouter()
 
 	// User section
-	userRouter := apiRouter.PathPrefix("/user/").Subrouter()
+	userRouter := apiRouter.PathPrefix("/user").Subrouter()
 	userRouter.Handle("/{user_id:[0-9]+}",
 		http.HandlerFunc(user.GetUserHandler()),
 	).Methods("GET")
-	userRouter.Handle("/",
+	userRouter.Handle("",
 		middleware.NeedAuthentication(http.HandlerFunc(user.GetCurrentUserHandler())),
 	).Methods("GET")
+	userRouter.Handle(
+		"/nickname",
+		middleware.NeedAuthentication(http.HandlerFunc(user.ChangeNicknameEndpoint)),
+	).Methods("PUT")
 
 	// Anime section
 	animeRouter := apiRouter.PathPrefix("/anime").Subrouter()

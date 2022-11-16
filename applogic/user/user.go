@@ -17,11 +17,15 @@ func GetUser(userID types.UserID) (*UserModel, error) {
 		Role:      user.Role,
 		Favorites: user.Favorites,
 		Watched:   user.Watched,
-		Added:     user.Added,
 		Rated: []struct {
 			ID   types.AnimeID
 			Rate types.AnimeRating
 		}(user.Rated),
 	}
 	return ans, err
+}
+
+func SetNickname(userID types.UserID, newNickname string) error {
+	err := db.EditNickname(userID, newNickname)
+	return err
 }
