@@ -37,7 +37,7 @@ func CreateAnimeEndpoint(w http.ResponseWriter, req *http.Request) {
 	w.Write(ansJSON)
 }
 
-func GetCommentByID(w http.ResponseWriter, req *http.Request) {
+func GetCommentByIDEndpoint(w http.ResponseWriter, req *http.Request) {
 	animeID, _ := strconv.Atoi(mux.Vars(req)["anime_id"])
 
 	comment, err := comments.GetComments(types.AnimeID(animeID))
@@ -51,5 +51,20 @@ func GetCommentByID(w http.ResponseWriter, req *http.Request) {
 
 	ansJSON, _ := json.Marshal(comment)
 	w.Write(ansJSON)
+
+}
+
+func DeleteCommentEndpoint(w http.ResponseWriter, req *http.Request) {
+	_commentID, _ := mux.Vars(req)["comment_id"]
+	commentID := types.CommentID(_commentID)
+
+	err := comments.DeleteComment(&commentID)
+	if err != nil {
+		if err == myerrors.ErrCommentNotFound {
+			apiErrors.SetErrorInResponce(&apiErrors.ErrCommentNotFound, w, http.StatusNotFound)
+			return
+		}
+		return
+	}
 
 }

@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"fmt"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
 	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
@@ -69,12 +68,13 @@ func DeleteCommentFromAnime(animeID AnimeID, commentID primitive.ObjectID) error
 // DeleteCommentByID removes comment from anime
 //
 // It must be guaranteed that the user with the `id` exists
-func DeleteCommentByID(commentID primitive.ObjectID) error {
+func DeleteCommentByID(commentID *CommentID) error {
+	commentIDObj, err := primitive.ObjectIDFromHex(string(*commentID))
 	ans, err := commentsCollection.UpdateMany(ctx,
 		bson.M{},
 		bson.M{
 			"$pull": bson.M{
-				"Comments": bson.M{"id": commentID},
+				"Comments": bson.M{"_id": commentIDObj},
 			},
 		},
 	)
@@ -83,7 +83,7 @@ func DeleteCommentByID(commentID primitive.ObjectID) error {
 		return err
 	}
 	if ans.ModifiedCount == 0 {
-		return fmt.Errorf("comment with id %v not fount", commentID.Hex())
+		return inerr.ErrCommentNotFound
 	}
 	return nil
 }

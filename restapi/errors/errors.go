@@ -39,6 +39,7 @@ const (
 	badRequest
 	fileTooBig
 	badFileFormat
+	commentNotFound
 )
 
 var ErrBadJSONStruct = ErrBaseEndpointError{Message: "Bad json", ErrorCode: badJSONStruct}
@@ -56,6 +57,8 @@ var ErrFileTooBig = ErrBaseEndpointError{
 	Message:   "File too big. Max size is " + strconv.Itoa(int(config.Config.MaxUploadedFileSize)),
 	ErrorCode: fileTooBig,
 }
+var ErrCommentNotFound = ErrBaseEndpointError{Message: "Comment not found", ErrorCode: commentNotFound}
+
 var ErrBadImageFormat = ErrBaseEndpointError{
 	Message:   "The provided file format is not allowed. Upload a JPEG or PNG.",
 	ErrorCode: badFileFormat,

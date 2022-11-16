@@ -39,3 +39,4 @@ var ErrIncorrectPartsNumberOfJWTToken = errors.New("The number of parts of the j
 
 var ErrJWTTokenTimeout = errors.New("JWT token timeout")
 var ErrJWTTokenInvalidSignature = errors.New("JWT token has invalid signature")
+var ErrCommentNotFound = errors.New("Comment not found")

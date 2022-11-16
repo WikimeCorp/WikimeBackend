@@ -19,3 +19,8 @@ func GetComments(animeID types.AnimeID) ([]Comment, error) {
 	}
 	return ans, err
 }
+
+func DeleteComment(commentID *types.CommentID) error {
+	err := db.DeleteCommentByID(commentID)
+	return err
+}

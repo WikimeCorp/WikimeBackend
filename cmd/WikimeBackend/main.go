@@ -76,10 +76,14 @@ func setupRouter() *mux.Router {
 		"",
 		comments.CreateAnimeEndpoint,
 	).Methods("POST")
-	commentsRouter.HandleFunc(
-		"/{anime_id:[0-9]+}",
-		comments.GetCommentByID,
+	animeRouter.HandleFunc(
+		"/comments/{anime_id:[0-9]+}",
+		comments.GetCommentByIDEndpoint,
 	).Methods("GET")
+	commentsRouter.HandleFunc(
+		"/{comment_id:[0-9a-z]{24}}",
+		comments.DeleteCommentEndpoint,
+	).Methods("DELETE")
 
 	// Auth section
 	authRouter := apiRouter.PathPrefix("/auth/").Subrouter()
