@@ -29,3 +29,8 @@ func SetNickname(userID types.UserID, newNickname string) error {
 	err := db.EditNickname(userID, newNickname)
 	return err
 }
+
+func AddToFavorites(userID types.UserID, animeID types.AnimeID) error {
+	err := db.AddAnimeToFavorites(animeID, userID)
+	return err
+}

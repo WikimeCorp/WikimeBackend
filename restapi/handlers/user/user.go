@@ -73,6 +73,27 @@ func getCurrentUserEndpoint(w http.ResponseWriter, req *http.Request) {
 }
 
 // GetCurrentUserHandler return get current user handler
-func GetCurrentUserHandler() func(w http.ResponseWriter, req *http.Request) {
+func GetCurrentUserHandler() func(http.ResponseWriter, *http.Request) {
 	return getCurrentUserEndpoint
+}
+
+func addToFavoritesEndpoint(w http.ResponseWriter, req *http.Request) {
+	userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+
+	reqData := AddToFavoritesRequest{}
+	err := other.CheckRequestJSONData(w, req, &reqData)
+	if err != nil {
+		return
+	}
+
+	err = user.AddToFavorites(userID, *reqData.AnimeID)
+	switch err.(type) {
+	case *myerrors.ErrAnimeNotFound:
+		apiErrors.SetErrorInResponce(&apiErrors.ErrAnimeNotFound, w, http.StatusNotFound)
+		return
+	}
+}
+
+func AddToFavoritesHandler() func(http.ResponseWriter, *http.Request) {
+	return addToFavoritesEndpoint
 }

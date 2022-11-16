@@ -76,25 +76,28 @@ func EditNickname(id UserID, newNickname string) error {
 	return err
 }
 
-func _pushToSet(userID UserID, animeID AnimeID, list string) error {
+func _pushToSet(userID UserID, animeID AnimeID, list string) (bool, error) {
 	anime := animeCollection.FindOne(ctx, bson.M{"_id": animeID})
 	if errors.Is(anime.Err(), mongo.ErrNoDocuments) {
-		return &inerr.ErrAnimeNotFound{animeID}
+		return false, &inerr.ErrAnimeNotFound{animeID}
 	}
 
 	ans, err := usersCollection.UpdateByID(ctx, userID, bson.M{
 		"$addToSet": bson.M{list: animeID},
 	})
 	if err != nil {
-		return err
+		return false, err
 	}
 	if ans.MatchedCount == 0 {
-		err = &inerr.ErrUserNotFound{userID}
+		return false, &inerr.ErrUserNotFound{userID}
 	}
-	return err
+	if ans.ModifiedCount == 0 {
+		return false, nil
+	}
+	return true, nil
 }
 
-func addToFavorites(userID UserID, animeID AnimeID) error {
+func addToFavorites(userID UserID, animeID AnimeID) (bool, error) {
 	return _pushToSet(userID, animeID, "Favorites")
 }
 
@@ -103,11 +106,11 @@ func deleteFromFavorites(userID UserID, animeID AnimeID) error {
 	return err
 }
 
-func addToWatched(userID UserID, animeID AnimeID) error {
+func addToWatched(userID UserID, animeID AnimeID) (bool, error) {
 	return _pushToSet(userID, animeID, "Watched")
 }
 
-func addToAdded(userID UserID, animeID AnimeID) error {
+func addToAdded(userID UserID, animeID AnimeID) (bool, error) {
 	return _pushToSet(userID, animeID, "Added")
 }
 

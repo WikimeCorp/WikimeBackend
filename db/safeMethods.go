@@ -100,20 +100,15 @@ func DeleteAnimeFromFavorites(animeID AnimeID, userID UserID) error {
 //
 // It must be guaranteed that the user with the `id` exists
 func AddAnimeToFavorites(animeID AnimeID, userID UserID) error {
-	// NEED ADD CHECK FOR InFavorites COUNT AND ADDING TO User.Facorites
-	log.Fatal("Not implemented")
+	wasModified, err := addToFavorites(userID, animeID)
+
+	if err != nil {
+		return err
+	}
+
+	if wasModified == true {
+		err = IncFavorite(animeID, 1)
+		return err
+	}
 	return nil
-	// ans, err := ratingCollection.UpdateByID(ctx, animeID, bson.M{"$inc": bson.M{"InFavorites": 1}})
-
-	// if err != nil {
-	// 	return err
-	// }
-
-	// if ans.MatchedCount == 0 {
-	// 	return &inerr.ErrAnimeNotFound{AnimeID: animeID}
-	// }
-
-	// err = addToFavorites(userID, animeID)
-
-	// return err
 }
