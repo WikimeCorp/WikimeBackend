@@ -24,16 +24,22 @@ func setupRouter() *mux.Router {
 
 	// User section
 	userRouter := apiRouter.PathPrefix("/user").Subrouter()
-	userRouter.Handle("/{user_id:[0-9]+}",
+	userRouter.Handle(
+		"/{user_id:[0-9]+}",
 		http.HandlerFunc(user.GetUserHandler()),
 	).Methods("GET")
-	userRouter.Handle("",
+	userRouter.Handle(
+		"",
 		middleware.NeedAuthentication(http.HandlerFunc(user.GetCurrentUserHandler())),
 	).Methods("GET")
 	userRouter.Handle(
 		"/nickname",
 		middleware.NeedAuthentication(http.HandlerFunc(user.ChangeNicknameEndpoint)),
 	).Methods("PUT")
+	userRouter.Handle(
+		"/favorites",
+		middleware.NeedAuthentication(http.HandlerFunc(user.AddToFavoritesHandler())),
+	).Methods("POST")
 
 	// Anime section
 	animeRouter := apiRouter.PathPrefix("/anime").Subrouter()
@@ -60,10 +66,10 @@ func setupRouter() *mux.Router {
 
 	// Images section
 	router.PathPrefix("/images/").Handler(
-		middleware.SetJSONHeader(http.StripPrefix(
+		http.StripPrefix(
 			"/images",
 			http.FileServer(http.Dir(path.Join(config.Config.ImagePathDisk, config.Config.ImagesPathURI))),
-		)),
+		),
 	).Methods("GET")
 	animeRouter.HandleFunc(
 		"/{anime_id:[0-9]+}/image",
