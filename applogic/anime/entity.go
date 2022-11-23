@@ -44,4 +44,5 @@ type Rating struct {
 	One         uint32  `json:"one"`
 	InFavorites uint32  `json:"inFavorites"`
 	Average     float64 `json:"average"`
+	Watched     uint32  `json:"watched"`
 }

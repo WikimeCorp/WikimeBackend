@@ -15,85 +15,138 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func getUserEndpoint(w http.ResponseWriter, req *http.Request) {
-	userID, _ := strconv.Atoi(mux.Vars(req)["user_id"])
-	user, err := user.GetUser(types.UserID(userID))
-
-	var errUserNotFound *myerrors.ErrUserNotFound
-
-	if err != nil {
-		if errors.As(err, &errUserNotFound) {
-			apiErrors.SetErrorInResponce(&apiErrors.ErrUserNotFound, w, http.StatusUnauthorized)
-			return
-		}
-	}
-
-	jsonAns, _ := json.Marshal(user)
-
-	w.Write(jsonAns)
-}
-
 // GetUserHandler return get user handler
 func GetUserHandler() func(w http.ResponseWriter, req *http.Request) {
-	return getUserEndpoint
+	return func(w http.ResponseWriter, req *http.Request) {
+		userID, _ := strconv.Atoi(mux.Vars(req)["user_id"])
+		user, err := user.GetUser(types.UserID(userID))
+
+		var errUserNotFound *myerrors.ErrUserNotFound
+
+		if err != nil {
+			if errors.As(err, &errUserNotFound) {
+				apiErrors.SetErrorInResponce(&apiErrors.ErrUserNotFound, w, http.StatusUnauthorized)
+				return
+			}
+		}
+
+		jsonAns, _ := json.Marshal(user)
+
+		w.Write(jsonAns)
+	}
 }
 
-func ChangeNicknameEndpoint(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+func ChangeNicknameHandler() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
 
-	reqData := ChangeNicknameRequest{}
-	err := other.CheckRequestJSONData(w, req, &reqData)
-	if err != nil {
-		return
-	}
-	err = user.SetNickname(userID, reqData.Nickname)
-	if err != nil {
-		apiErrors.SetErrorInResponce(&apiErrors.ErrInternalServerError, w, http.StatusInternalServerError)
-		return
-	}
-}
-
-func getCurrentUserEndpoint(w http.ResponseWriter, req *http.Request) {
-
-	userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
-	user, err := user.GetUser(userID)
-
-	var errUserNotFound *myerrors.ErrUserNotFound
-
-	if err != nil {
-		if errors.As(err, &errUserNotFound) {
-			apiErrors.SetErrorInResponce(&apiErrors.ErrUserNotFound, w, http.StatusUnauthorized)
+		reqData := ChangeNicknameRequest{}
+		err := other.CheckRequestJSONData(w, req, &reqData)
+		if err != nil {
+			return
+		}
+		err = user.SetNickname(userID, reqData.Nickname)
+		if err != nil {
+			apiErrors.SetErrorInResponce(&apiErrors.ErrInternalServerError, w, http.StatusInternalServerError)
 			return
 		}
 	}
-
-	jsonAns, _ := json.Marshal(user)
-
-	w.Write(jsonAns)
 }
 
 // GetCurrentUserHandler return get current user handler
 func GetCurrentUserHandler() func(http.ResponseWriter, *http.Request) {
-	return getCurrentUserEndpoint
-}
+	return func(w http.ResponseWriter, req *http.Request) {
 
-func addToFavoritesEndpoint(w http.ResponseWriter, req *http.Request) {
-	userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+		userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+		user, err := user.GetUser(userID)
 
-	reqData := AddToFavoritesRequest{}
-	err := other.CheckRequestJSONData(w, req, &reqData)
-	if err != nil {
-		return
-	}
+		var errUserNotFound *myerrors.ErrUserNotFound
 
-	err = user.AddToFavorites(userID, *reqData.AnimeID)
-	switch err.(type) {
-	case *myerrors.ErrAnimeNotFound:
-		apiErrors.SetErrorInResponce(&apiErrors.ErrAnimeNotFound, w, http.StatusNotFound)
-		return
+		if err != nil {
+			if errors.As(err, &errUserNotFound) {
+				apiErrors.SetErrorInResponce(&apiErrors.ErrUserNotFound, w, http.StatusUnauthorized)
+				return
+			}
+		}
+
+		jsonAns, _ := json.Marshal(user)
+
+		w.Write(jsonAns)
 	}
 }
 
 func AddToFavoritesHandler() func(http.ResponseWriter, *http.Request) {
-	return addToFavoritesEndpoint
+	return func(w http.ResponseWriter, req *http.Request) {
+		userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+
+		reqData := AddToFavoritesRequest{}
+		err := other.CheckRequestJSONData(w, req, &reqData)
+		if err != nil {
+			return
+		}
+
+		err = user.AddToFavorites(userID, *reqData.AnimeID)
+		switch err.(type) {
+		case *myerrors.ErrAnimeNotFound:
+			apiErrors.SetErrorInResponce(&apiErrors.ErrAnimeNotFound, w, http.StatusNotFound)
+			return
+		}
+	}
+}
+
+func AddToWatchedHandler() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+
+		reqData := AddToWatchedRequest{}
+		err := other.CheckRequestJSONData(w, req, &reqData)
+		if err != nil {
+			return
+		}
+
+		err = user.AddToWatched(userID, *reqData.AnimeID)
+		switch err.(type) {
+		case *myerrors.ErrAnimeNotFound:
+			apiErrors.SetErrorInResponce(&apiErrors.ErrAnimeNotFound, w, http.StatusNotFound)
+			return
+		}
+	}
+}
+
+func DeleteFromWatchedHandler() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+
+		reqData := DeleteFromWatchedRequest{}
+		err := other.CheckRequestJSONData(w, req, &reqData)
+		if err != nil {
+			return
+		}
+
+		err = user.DeleteFromWatched(userID, *reqData.AnimeID)
+		switch err.(type) {
+		case *myerrors.ErrAnimeNotFound:
+			apiErrors.SetErrorInResponce(&apiErrors.ErrAnimeNotFound, w, http.StatusNotFound)
+			return
+		}
+	}
+}
+
+func DeleteFromFavoritesHandler() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+
+		reqData := DeleteFromFavoritesRequest{}
+		err := other.CheckRequestJSONData(w, req, &reqData)
+		if err != nil {
+			return
+		}
+
+		err = user.DeleteFromFavorites(userID, *reqData.AnimeID)
+		switch err.(type) {
+		case *myerrors.ErrAnimeNotFound:
+			apiErrors.SetErrorInResponce(&apiErrors.ErrAnimeNotFound, w, http.StatusNotFound)
+			return
+		}
+	}
 }

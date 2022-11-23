@@ -3,7 +3,6 @@ package db
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
 	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
@@ -75,27 +74,6 @@ func Rate(animeID AnimeID, userID UserID, rate AnimeRating) error {
 	return nil
 }
 
-// DeleteAnimeFromFavorites removes anime from the list of `favorites` of a user with the id `userID`
-//
-// It must be guaranteed that the user with the `id` exists
-func DeleteAnimeFromFavorites(animeID AnimeID, userID UserID) error {
-	// NEED ADD CHECK FOR InFavorites COUNT AND DELETING FROM User.Facorites
-	log.Fatal("Not implemented")
-	return nil
-	// ans, err := ratingCollection.UpdateByID(ctx, animeID, bson.M{"$inc": bson.M{"InFavorites": -1}})
-	// if err != nil {
-	// 	return err
-	// }
-
-	// if ans.MatchedCount == 0 {
-	// 	return &inerr.ErrAnimeNotFound{AnimeID: animeID}
-	// }
-
-	// err = deleteFromFavorites(userID, animeID)
-
-	// return err
-}
-
 // AddAnimeToFavorites adding anime to the list of 'favorites' of a user with the ID 'User ID`
 //
 // It must be guaranteed that the user with the `id` exists
@@ -110,5 +88,56 @@ func AddAnimeToFavorites(animeID AnimeID, userID UserID) error {
 		err = IncFavorite(animeID, 1)
 		return err
 	}
+	return nil
+}
+
+// AddAnimeToWatched adding anime to the list of 'Watched' of a user with the ID 'User ID`
+//
+// It must be guaranteed that the user with the `id` exists
+func AddAnimeToWatched(animeID AnimeID, userID UserID) error {
+	wasModified, err := addToWatched(userID, animeID)
+	if err != nil {
+		return err
+	}
+
+	if wasModified == true {
+		err = IncWatched(animeID, 1)
+		return err
+	}
+
+	return nil
+}
+
+// DeleteAnimeFromFavorites removes anime from the list of `favorites` of a user with the id `userID`
+//
+// It must be guaranteed that the user with the `id` exists
+func DeleteAnimeFromFavorites(animeID AnimeID, userID UserID) error {
+	wasModified, err := deleteFromFavorites(userID, animeID)
+	if err != nil {
+		return err
+	}
+
+	if wasModified == true {
+		err = IncFavorite(animeID, -1)
+		return err
+	}
+
+	return nil
+}
+
+// DeleteAnimeFromWatched removes anime from the list of `Watched` of a user with the id `userID`
+//
+// It must be guaranteed that the user with the `id` exists
+func DeleteAnimeFromWatched(animeID AnimeID, userID UserID) error {
+	wasModified, err := deleteFromWatched(userID, animeID)
+	if err != nil {
+		return err
+	}
+
+	if wasModified == true {
+		err = IncWatched(animeID, -1)
+		return err
+	}
+
 	return nil
 }
