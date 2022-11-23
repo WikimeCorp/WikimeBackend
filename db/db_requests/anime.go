@@ -4,19 +4,22 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// GetAnimesSortedByRatingWithGenres generate mongodb request for *see func name*
-func GetAnimesSortedByRatingWithGenres(genres []string) bson.A {
-
+func genresToBsonArray(genres []string) bson.A {
 	genresArray := bson.A{}
 	if len(genres) != 0 {
 		for _, genre := range genres {
-			genresArray = append(genresArray, bson.D{{"Genres", genre}})
+			genresArray = append(genresArray, bson.D{{Key: "Genres", Value: genre}})
 		}
 	} else {
 		genresArray = append(genresArray, bson.D{})
 	}
+	return genresArray
+}
 
-	ans := bson.A{
+func generateSortingWithGenres(field string, genres []string, order int8) bson.A {
+	genresArray := genresToBsonArray(genres)
+
+	return bson.A{
 		bson.D{
 			{Key: "$match",
 				Value: bson.D{
@@ -27,9 +30,27 @@ func GetAnimesSortedByRatingWithGenres(genres []string) bson.A {
 			},
 		},
 		bson.D{
-			{Key: "$sort", Value: bson.D{{Key: "Rating.Average", Value: -1}}},
+			{Key: "$sort", Value: bson.D{{Key: field, Value: order}}},
 		},
 	}
+}
 
-	return ans
+// GetAnimesSortedByRatingWithGenres generate mongodb request for *see func name*
+func GetAnimesSortedByRatingWithGenres(genres []string, order int8) bson.A {
+	return generateSortingWithGenres("Rating.Average", genres, order)
+}
+
+// GetAnimeSortedByAddingDateWithGenres generate mongodb request for *see func name*
+func GetAnimeSortedByAddingDateWithGenres(genres []string, order int8) bson.A {
+	return generateSortingWithGenres("DateAdded", genres, order)
+}
+
+// GetAnimeSortedByReleaseDateWithGenres generate mongodb request for *see func name*
+func GetAnimeSortedByReleaseDateWithGenres(genres []string, order int8) bson.A {
+	return generateSortingWithGenres("ReleaseDate", genres, order)
+}
+
+// GetAnimeSortedByFavoritesWithGenres generate mongodb request for *see func name*
+func GetAnimeSortedByFavoritesWithGenres(genres []string, order int8) bson.A {
+	return generateSortingWithGenres("Rating.InFavorites", genres, order)
 }

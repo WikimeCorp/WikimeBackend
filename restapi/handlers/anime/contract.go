@@ -42,4 +42,5 @@ type AnimeByListIDResponce struct {
 type GetAnimesRequest struct {
 	SortBy string   `json:"sortBy" validate:"required"`
 	Genres []string `json:"genres" validate:"required"`
+	Order  *int8    `json:"order" validate:"required"`
 }
