@@ -11,6 +11,7 @@ import (
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/comments"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/images"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/other"
+	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/rating"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/user"
 
 	"github.com/WikimeCorp/WikimeBackend/restapi/middleware"
@@ -22,8 +23,13 @@ func setupRouter() *mux.Router {
 
 	apiRouter := mux.NewRouter()
 
-	// User section
+	// Routers
 	userRouter := apiRouter.PathPrefix("/user").Subrouter()
+	animeRouter := apiRouter.PathPrefix("/anime").Subrouter()
+	commentsRouter := apiRouter.PathPrefix("/comments").Subrouter()
+	authRouter := apiRouter.PathPrefix("/auth/").Subrouter()
+
+	// User section
 	userRouter.Handle(
 		"/{user_id:[0-9]+}",
 		http.HandlerFunc(user.GetUserHandler()),
@@ -54,7 +60,6 @@ func setupRouter() *mux.Router {
 	).Methods("DELETE")
 
 	// Anime section
-	animeRouter := apiRouter.PathPrefix("/anime").Subrouter()
 	animeRouter.HandleFunc(
 		"",
 		anime.GetAnimesHangler(),
@@ -93,7 +98,6 @@ func setupRouter() *mux.Router {
 	).Methods("POST")
 
 	// Comment section
-	commentsRouter := apiRouter.PathPrefix("/comments").Subrouter()
 	commentsRouter.HandleFunc(
 		"",
 		comments.CreateAnimeEndpoint,
@@ -107,8 +111,13 @@ func setupRouter() *mux.Router {
 		comments.DeleteCommentEndpoint,
 	).Methods("DELETE")
 
+	// Rating section
+	animeRouter.Handle(
+		"/{anime_id:[0-9]+}/rating",
+		middleware.NeedAuthentication(http.HandlerFunc(rating.SetRatingHandler())),
+	).Methods("POST")
+
 	// Auth section
-	authRouter := apiRouter.PathPrefix("/auth/").Subrouter()
 	authRouter.HandleFunc("/vk", auth.OAuthVkHandler()).Methods("POST")
 
 	apiRouter.NotFoundHandler = http.HandlerFunc(other.NotFoundEndpoint)
