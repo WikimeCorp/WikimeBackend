@@ -90,13 +90,55 @@ func SetAverage(anime types.AnimeID, average float64) error {
 	return err
 }
 
-func GetAnimeSortedByRating(genres []string) ([]types.AnimeID, error) {
+func GetAnimeSortedByRating(genres []string, order int8) ([]types.AnimeID, error) {
 	ans, badGenres := db.CheckGenres(genres)
 	if ans == false {
 		return nil, &myerrors.ErrWrongGenres{badGenres}
 	}
 
-	animeIDs, err := db.GetAnimeIDsSortedByRating(genres)
+	animeIDs, err := db.GetAnimeIDsSortedByRating(genres, order)
+	if err != nil {
+		return nil, err
+	}
+
+	return animeIDs, nil
+}
+
+func GetAnimeSortedByFavorites(genres []string, order int8) ([]types.AnimeID, error) {
+	ans, badGenres := db.CheckGenres(genres)
+	if ans == false {
+		return nil, &myerrors.ErrWrongGenres{badGenres}
+	}
+
+	animeIDs, err := db.GetAnimeIDsSortedByFavorites(genres, order)
+	if err != nil {
+		return nil, err
+	}
+
+	return animeIDs, nil
+}
+
+func GetAnimeSortedByAddingDate(genres []string, order int8) ([]types.AnimeID, error) {
+	ans, badGenres := db.CheckGenres(genres)
+	if ans == false {
+		return nil, &myerrors.ErrWrongGenres{badGenres}
+	}
+
+	animeIDs, err := db.GetAnimeIDsSortedByAddingDate(genres, order)
+	if err != nil {
+		return nil, err
+	}
+
+	return animeIDs, nil
+}
+
+func GetAnimeSortedByReleaseDate(genres []string, order int8) ([]types.AnimeID, error) {
+	ans, badGenres := db.CheckGenres(genres)
+	if ans == false {
+		return nil, &myerrors.ErrWrongGenres{badGenres}
+	}
+
+	animeIDs, err := db.GetAnimeIDsSortedByReleaseDate(genres, order)
 	if err != nil {
 		return nil, err
 	}
