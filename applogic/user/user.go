@@ -39,3 +39,13 @@ func AddToWatched(userID types.UserID, animeID types.AnimeID) error {
 	err := db.AddAnimeToWatched(animeID, userID)
 	return err
 }
+
+func DeleteFromFavorites(userID types.UserID, animeID types.AnimeID) error {
+	err := db.DeleteAnimeFromFavorites(animeID, userID)
+	return err
+}
+
+func DeleteFromWatched(userID types.UserID, animeID types.AnimeID) error {
+	err := db.DeleteAnimeFromWatched(animeID, userID)
+	return err
+}

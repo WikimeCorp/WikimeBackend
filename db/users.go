@@ -76,7 +76,7 @@ func EditNickname(id UserID, newNickname string) error {
 	return err
 }
 
-func _pushToSet(userID UserID, animeID AnimeID, list string) (bool, error) {
+func _pushToSetInUser(userID UserID, animeID AnimeID, list string) (bool, error) {
 	anime := animeCollection.FindOne(ctx, bson.M{"_id": animeID})
 	if errors.Is(anime.Err(), mongo.ErrNoDocuments) {
 		return false, &inerr.ErrAnimeNotFound{animeID}
@@ -97,21 +97,45 @@ func _pushToSet(userID UserID, animeID AnimeID, list string) (bool, error) {
 	return true, nil
 }
 
-func addToFavorites(userID UserID, animeID AnimeID) (bool, error) {
-	return _pushToSet(userID, animeID, "Favorites")
+func _pullFromSetInUser(userID UserID, animeID AnimeID, list string) (bool, error) {
+	anime := animeCollection.FindOne(ctx, bson.M{"_id": animeID})
+	if errors.Is(anime.Err(), mongo.ErrNoDocuments) {
+		return false, &inerr.ErrAnimeNotFound{animeID}
+	}
+
+	ans, err := usersCollection.UpdateByID(ctx, userID, bson.M{
+		"$pull": bson.M{list: animeID},
+	})
+	if err != nil {
+		return false, err
+	}
+	if ans.MatchedCount == 0 {
+		return false, &inerr.ErrUserNotFound{userID}
+	}
+	if ans.ModifiedCount == 0 {
+		return false, nil
+	}
+	return true, nil
 }
 
-func deleteFromFavorites(userID UserID, animeID AnimeID) error {
-	_, err := usersCollection.UpdateByID(ctx, userID, bson.M{"$pull": bson.M{"Favorites": animeID}})
-	return err
+func addToFavorites(userID UserID, animeID AnimeID) (bool, error) {
+	return _pushToSetInUser(userID, animeID, "Favorites")
+}
+
+func deleteFromFavorites(userID UserID, animeID AnimeID) (bool, error) {
+	return _pullFromSetInUser(userID, animeID, "Favorites")
 }
 
 func addToWatched(userID UserID, animeID AnimeID) (bool, error) {
-	return _pushToSet(userID, animeID, "Watched")
+	return _pushToSetInUser(userID, animeID, "Watched")
+}
+
+func deleteFromWatched(userID UserID, animeID AnimeID) (bool, error) {
+	return _pullFromSetInUser(userID, animeID, "Watched")
 }
 
 func addToAdded(userID UserID, animeID AnimeID) (bool, error) {
-	return _pushToSet(userID, animeID, "Added")
+	return _pushToSetInUser(userID, animeID, "Added")
 }
 
 func addToRated(userID UserID, animeID AnimeID, rate AnimeRating) error {

@@ -34,16 +34,24 @@ func setupRouter() *mux.Router {
 	).Methods("GET")
 	userRouter.Handle(
 		"/nickname",
-		middleware.NeedAuthentication(http.HandlerFunc(user.ChangeNicknameEndpoint)),
+		middleware.NeedAuthentication(http.HandlerFunc(user.ChangeNicknameHandler())),
 	).Methods("PUT")
 	userRouter.Handle(
 		"/favorites",
 		middleware.NeedAuthentication(http.HandlerFunc(user.AddToFavoritesHandler())),
 	).Methods("POST")
 	userRouter.Handle(
+		"/favorites",
+		middleware.NeedAuthentication(http.HandlerFunc(user.DeleteFromFavoritesHandler())),
+	).Methods("DELETE")
+	userRouter.Handle(
 		"/watched",
 		middleware.NeedAuthentication(http.HandlerFunc(user.AddToWatchedHandler())),
 	).Methods("POST")
+	userRouter.Handle(
+		"/watched",
+		middleware.NeedAuthentication(http.HandlerFunc(user.DeleteFromWatchedHandler())),
+	).Methods("DELETE")
 
 	// Anime section
 	animeRouter := apiRouter.PathPrefix("/anime").Subrouter()

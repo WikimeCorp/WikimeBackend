@@ -5,8 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -75,7 +73,6 @@ func generateRefreshToken(userID UserID) (string, error) {
 
 func checkExp(payload *types.JWTPayload) bool {
 	nowTime := time.Now().UTC().Unix()
-	log.Println(nowTime, payload.Exp)
 	if payload.Exp < nowTime {
 		return false
 	}
@@ -91,7 +88,6 @@ func CheckJWTValid(jwtToken string) (*types.JWTPayload, error) {
 
 	payloadStrInBase64 := strings.Split(jwtToken, ".")[1]
 	payloadBytes, err := base64.RawURLEncoding.DecodeString(payloadStrInBase64)
-	fmt.Println("Payload str:", payloadBytes)
 	payload := types.JWTPayload{}
 
 	_ = json.Unmarshal(payloadBytes, &payload)
