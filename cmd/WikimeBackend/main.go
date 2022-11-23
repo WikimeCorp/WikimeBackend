@@ -40,6 +40,10 @@ func setupRouter() *mux.Router {
 		"/favorites",
 		middleware.NeedAuthentication(http.HandlerFunc(user.AddToFavoritesHandler())),
 	).Methods("POST")
+	userRouter.Handle(
+		"/watched",
+		middleware.NeedAuthentication(http.HandlerFunc(user.AddToWatchedHandler())),
+	).Methods("POST")
 
 	// Anime section
 	animeRouter := apiRouter.PathPrefix("/anime").Subrouter()

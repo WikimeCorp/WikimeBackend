@@ -112,3 +112,17 @@ func AddAnimeToFavorites(animeID AnimeID, userID UserID) error {
 	}
 	return nil
 }
+
+func AddAnimeToWatched(animeID AnimeID, userID UserID) error {
+	wasModified, err := addToWatched(userID, animeID)
+	if err != nil {
+		return err
+	}
+
+	if wasModified == true {
+		err = IncWatched(animeID, 1)
+		return err
+	}
+
+	return nil
+}

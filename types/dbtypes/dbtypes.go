@@ -33,6 +33,7 @@ type Rating struct {
 	One         uint32  `bson:"One"`
 	InFavorites uint32  `bson:"InFavorites"`
 	Average     float64 `bson:"Average"`
+	Watched     uint32  `bson:"Watched"`
 }
 
 // User is presentation of a document from the `User` collection

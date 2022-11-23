@@ -71,6 +71,24 @@ func IncFavorite(id AnimeID, inc int) error {
 	return nil
 }
 
+// IncWatched increases or decreases the `Watched` field for anime with `id`.
+//
+// To reduce it, you need to pass a negative number to `inc`.
+func IncWatched(id AnimeID, inc int) error {
+	ans, err := animeCollection.UpdateByID(ctx, id, bson.M{
+		"$inc": bson.D{
+			{"Rating.Watched", inc},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if ans.MatchedCount == 0 {
+		return &myerrors.ErrAnimeNotFound{id}
+	}
+	return nil
+}
+
 func addRate(id AnimeID, rate AnimeRating) (err error) {
 	rateName, ok := _rateNames[rate]
 	if !ok {

@@ -97,3 +97,24 @@ func addToFavoritesEndpoint(w http.ResponseWriter, req *http.Request) {
 func AddToFavoritesHandler() func(http.ResponseWriter, *http.Request) {
 	return addToFavoritesEndpoint
 }
+
+func addToWatchedEndpoint(w http.ResponseWriter, req *http.Request) {
+	userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+
+	reqData := AddToWatchedRequest{}
+	err := other.CheckRequestJSONData(w, req, &reqData)
+	if err != nil {
+		return
+	}
+
+	err = user.AddToWatched(userID, *reqData.AnimeID)
+	switch err.(type) {
+	case *myerrors.ErrAnimeNotFound:
+		apiErrors.SetErrorInResponce(&apiErrors.ErrAnimeNotFound, w, http.StatusNotFound)
+		return
+	}
+}
+
+func AddToWatchedHandler() func(http.ResponseWriter, *http.Request) {
+	return addToWatchedEndpoint
+}

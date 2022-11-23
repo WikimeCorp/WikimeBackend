@@ -9,3 +9,7 @@ type ChangeNicknameRequest struct {
 type AddToFavoritesRequest struct {
 	AnimeID *types.AnimeID `json:"animeId" validate:"required"`
 }
+
+type AddToWatchedRequest struct {
+	AnimeID *types.AnimeID `json:"animeId" validate:"required"`
+}
