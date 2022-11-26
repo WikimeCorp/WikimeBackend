@@ -73,9 +73,13 @@ func setupRouter() *mux.Router {
 		anime.GetAnimeByListIDHandler(),
 	).Methods("GET")
 	animeRouter.HandleFunc(
+		"/popular",
+		anime.MostPopularHandler(),
+	)
+	animeRouter.Handle(
 		"",
-		anime.CreateAnimeHandler(),
-	).Methods("POST") // Add auth check
+		http.HandlerFunc(anime.CreateAnimeHandler()),
+	).Methods("POST")
 	animeRouter.HandleFunc(
 		"/{anime_id:[0-9]+}",
 		anime.SetAverageEndpoint,

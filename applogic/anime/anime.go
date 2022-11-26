@@ -146,6 +146,10 @@ func GetAnimeSortedByReleaseDate(genres []string, order int8) ([]types.AnimeID, 
 	return animeIDs, nil
 }
 
+func GetMostPopular(limit int) ([]types.AnimeID, error) {
+	return db.GetAnimeIDsSortedByFavorites([]string{}, -1, limit)
+}
+
 // CheckAnime returns whether the anime exists. Can be true or false
 func CheckAnime(animeID types.AnimeID) (bool, error) {
 	ans, err := db.CheckAnime(animeID)

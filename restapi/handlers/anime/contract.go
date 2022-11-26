@@ -44,3 +44,7 @@ type GetAnimesRequest struct {
 	Genres []string `json:"genres" validate:"required"`
 	Order  *int8    `json:"order" validate:"required"`
 }
+
+type MostPopular struct {
+	Count *int `json:"count" validate:"required,gte=1,lte=50"`
+}

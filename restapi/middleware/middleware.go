@@ -15,7 +15,7 @@ import (
 // SetJSONHeader is middleware, that add "Context-Type" header as "application/json"
 func SetJSONHeader(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.URL)
+		fmt.Println(r.URL, r.RequestURI, r.Body)
 		w.Header().Set("Content-Type", "application/json")
 		h.ServeHTTP(w, r)
 	})

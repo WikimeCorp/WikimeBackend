@@ -14,7 +14,7 @@ func NotFoundEndpoint(w http.ResponseWriter, req *http.Request) {
 	apiErrors.SetErrorInResponce(&apiErrors.ErrNotFound, w, http.StatusNotFound)
 }
 
-func CheckRequestJSONData(w http.ResponseWriter, req *http.Request, data any) error {
+func CheckRequestJSONData[T any](w http.ResponseWriter, req *http.Request, data *T) error {
 	err := json.NewDecoder(req.Body).Decode(data)
 
 	if err != nil {

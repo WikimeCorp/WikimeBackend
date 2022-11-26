@@ -118,16 +118,24 @@ func decodeAnimesToIDList(cursor *mongo.Cursor) ([]AnimeID, error) {
 	return results, nil
 }
 
-func GetAnimeIDsSortedByRating(genres []string, order int8) ([]AnimeID, error) {
-	cursor, err := animeCollection.Aggregate(ctx, dbrequests.GetAnimesSortedByRatingWithGenres(genres, order))
+func GetAnimeIDsSortedByRating(genres []string, order int8, limit ...int) ([]AnimeID, error) {
+	_limit := -1
+	if len(limit) != 0 {
+		_limit = limit[0]
+	}
+	cursor, err := animeCollection.Aggregate(ctx, dbrequests.GetAnimesSortedByRatingWithGenres(genres, order, _limit))
 	if err != nil {
 		return nil, err
 	}
 	return decodeAnimesToIDList(cursor)
 }
 
-func GetAnimeIDsSortedByFavorites(genres []string, order int8) ([]AnimeID, error) {
-	cursor, err := animeCollection.Aggregate(ctx, dbrequests.GetAnimeSortedByFavoritesWithGenres(genres, order))
+func GetAnimeIDsSortedByFavorites(genres []string, order int8, limit ...int) ([]AnimeID, error) {
+	_limit := -1
+	if len(limit) != 0 {
+		_limit = limit[0]
+	}
+	cursor, err := animeCollection.Aggregate(ctx, dbrequests.GetAnimeSortedByFavoritesWithGenres(genres, order, _limit))
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +143,12 @@ func GetAnimeIDsSortedByFavorites(genres []string, order int8) ([]AnimeID, error
 	return decodeAnimesToIDList(cursor)
 }
 
-func GetAnimeIDsSortedByAddingDate(genres []string, order int8) ([]AnimeID, error) {
-	cursor, err := animeCollection.Aggregate(ctx, dbrequests.GetAnimeSortedByAddingDateWithGenres(genres, order))
+func GetAnimeIDsSortedByAddingDate(genres []string, order int8, limit ...int) ([]AnimeID, error) {
+	_limit := -1
+	if len(limit) != 0 {
+		_limit = limit[0]
+	}
+	cursor, err := animeCollection.Aggregate(ctx, dbrequests.GetAnimeSortedByAddingDateWithGenres(genres, order, _limit))
 	if err != nil {
 		return nil, err
 	}
@@ -144,8 +156,12 @@ func GetAnimeIDsSortedByAddingDate(genres []string, order int8) ([]AnimeID, erro
 	return decodeAnimesToIDList(cursor)
 }
 
-func GetAnimeIDsSortedByReleaseDate(genres []string, order int8) ([]AnimeID, error) {
-	cursor, err := animeCollection.Aggregate(ctx, dbrequests.GetAnimeSortedByReleaseDateWithGenres(genres, order))
+func GetAnimeIDsSortedByReleaseDate(genres []string, order int8, limit ...int) ([]AnimeID, error) {
+	_limit := -1
+	if len(limit) != 0 {
+		_limit = limit[0]
+	}
+	cursor, err := animeCollection.Aggregate(ctx, dbrequests.GetAnimeSortedByReleaseDateWithGenres(genres, order, _limit))
 	if err != nil {
 		return nil, err
 	}

@@ -48,6 +48,7 @@ func CreateAnimeHandler() func(http.ResponseWriter, *http.Request) {
 		err := json.NewDecoder(req.Body).Decode(animeReq)
 
 		if err != nil {
+			fmt.Println(err)
 			apiErrors.SetErrorInResponce(&apiErrors.ErrBadJSONStruct, w, http.StatusBadRequest)
 			return
 		}
@@ -81,24 +82,9 @@ func CreateAnimeHandler() func(http.ResponseWriter, *http.Request) {
 // GetAnimeByListIDHandler ...
 func GetAnimeByListIDHandler() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		animeListReq := &AnimeByListIDRequest{}
-		err := json.NewDecoder(req.Body).Decode(animeListReq)
-
+		animeListReq := AnimeByListIDRequest{}
+		err := other.CheckRequestJSONData(w, req, &animeListReq)
 		if err != nil {
-			apiErrors.SetErrorInResponce(&apiErrors.ErrBadJSONStruct, w, http.StatusBadRequest)
-			return
-		}
-
-		err = dependencies.Validate.Struct(animeListReq)
-
-		if err != nil {
-			tmpErrors := make([]string, 0)
-			for _, err := range err.(validator.ValidationErrors) {
-				tmpErrors = append(tmpErrors, err.Error())
-			}
-
-			err := apiErrors.ErrValidate(tmpErrors)
-			apiErrors.SetErrorInResponce(err, w, http.StatusBadRequest)
 			return
 		}
 
@@ -189,7 +175,7 @@ func SetAverageEndpoint(w http.ResponseWriter, req *http.Request) {
 	reqJson := struct {
 		Average *float64 `validate:"required" json:"average"`
 	}{}
-	_ = json.NewDecoder(req.Body).Decode(&reqJson)
+
 	err := other.CheckRequestJSONData(w, req, &reqJson)
 	if err != nil {
 		return
@@ -200,4 +186,25 @@ func SetAverageEndpoint(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte(err.Error()))
 	}
 
+}
+
+func MostPopularHandler() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		reqData := MostPopular{}
+		err := other.CheckRequestJSONData(w, req, &reqData)
+		if err != nil {
+			return
+		}
+
+		animes, err := anime.GetMostPopular(*reqData.Count)
+		if err != nil {
+			switch err.(type) {
+			default:
+			}
+			return
+		}
+
+		ans, _ := json.Marshal(animes)
+		w.Write(ans)
+	}
 }
