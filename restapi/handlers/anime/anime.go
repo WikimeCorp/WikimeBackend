@@ -114,14 +114,26 @@ func GetAnimeByListIDHandler() func(http.ResponseWriter, *http.Request) {
 
 func GetAnimesHangler() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		reqData := GetAnimesRequest{}
-
-		err := other.CheckRequestJSONData(w, req, &reqData)
-		if err != nil {
+		sortBy := req.URL.Query().Get("sortBy")
+		if sortBy == "" {
+			apiErrors.SetErrorInResponce(
+				apiErrors.ErrBadRequest.SetNewMessage("request must contain sortBy parameter"),
+				w,
+				http.StatusBadRequest,
+			)
 			return
 		}
 
-		if *reqData.Order != -1 && *reqData.Order != 1 {
+		orderStr := req.URL.Query().Get("order")
+		order := int8(-1)
+		var err error
+		if orderStr != "" {
+			var orderInt int
+			orderInt, err = strconv.Atoi(orderStr)
+			order = int8(orderInt)
+		}
+
+		if err != nil || (order != -1 && order != 1) {
 			apiErrors.SetErrorInResponce(
 				apiErrors.ErrBadRequest.SetNewMessage("Invalid order, must be 1 or -1"),
 				w,
@@ -130,19 +142,25 @@ func GetAnimesHangler() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
+		genresIn := req.URL.Query().Get("genres")
+		genres := make([]string, 0)
+		if genresIn != "" {
+			genres = strings.Split(genresIn, ",")
+		}
+
 		animesIDs := make([]types.AnimeID, 0)
 
-		if reqData.SortBy == "rating" {
-			animesIDs, err = anime.GetAnimeSortedByRating(reqData.Genres, *reqData.Order)
-		} else if reqData.SortBy == "releaseDate" {
-			animesIDs, err = anime.GetAnimeSortedByReleaseDate(reqData.Genres, *reqData.Order)
-		} else if reqData.SortBy == "dateAdded" {
-			animesIDs, err = anime.GetAnimeSortedByAddingDate(reqData.Genres, *reqData.Order)
-		} else if reqData.SortBy == "favorites" {
-			animesIDs, err = anime.GetAnimeSortedByFavorites(reqData.Genres, *reqData.Order)
+		if sortBy == "rating" {
+			animesIDs, err = anime.GetAnimeSortedByRating(genres, order)
+		} else if sortBy == "releaseDate" {
+			animesIDs, err = anime.GetAnimeSortedByReleaseDate(genres, order)
+		} else if sortBy == "dateAdded" {
+			animesIDs, err = anime.GetAnimeSortedByAddingDate(genres, order)
+		} else if sortBy == "favorites" {
+			animesIDs, err = anime.GetAnimeSortedByFavorites(genres, order)
 		} else {
 			apiErrors.SetErrorInResponce(
-				apiErrors.ErrBadRequest.SetNewMessage("Cannot sort by"+reqData.SortBy),
+				apiErrors.ErrBadRequest.SetNewMessage("Cannot sort by"+sortBy),
 				w,
 				http.StatusBadRequest,
 			)
@@ -190,13 +208,16 @@ func SetAverageEndpoint(w http.ResponseWriter, req *http.Request) {
 
 func MostPopularHandler() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		reqData := MostPopular{}
-		err := other.CheckRequestJSONData(w, req, &reqData)
-		if err != nil {
-			return
+		countStr := req.URL.Query().Get("count")
+		count, err := strconv.Atoi(countStr)
+		if err != nil || count < 0 {
+			apiErrors.SetErrorInResponce(
+				apiErrors.ErrBadRequest.SetNewMessage("Invalid 'count' type, must be uint"),
+				w,
+				http.StatusBadRequest)
 		}
 
-		animes, err := anime.GetMostPopular(*reqData.Count)
+		animes, err := anime.GetMostPopular(count)
 		if err != nil {
 			switch err.(type) {
 			default:

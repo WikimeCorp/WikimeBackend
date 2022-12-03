@@ -75,7 +75,7 @@ func setupRouter() *mux.Router {
 	animeRouter.HandleFunc(
 		"/popular",
 		anime.MostPopularHandler(),
-	)
+	).Queries("count", "{count:[0-9]*+}").Methods("GET")
 	animeRouter.Handle(
 		"",
 		http.HandlerFunc(anime.CreateAnimeHandler()),
