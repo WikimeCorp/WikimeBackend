@@ -24,3 +24,17 @@ func DeleteComment(commentID *types.CommentID) error {
 	err := db.DeleteCommentByID(commentID)
 	return err
 }
+
+func CheckAuthorComment(commentID *types.CommentID, userID types.UserID) (bool, error) {
+	return db.CheckCommentAuthor(commentID, userID)
+}
+
+func GetComment(commentID *types.CommentID) (*Comment, error) {
+	ansDB, err := db.GetComment(commentID)
+	if err != nil {
+		return nil, err
+	}
+
+	ans := Comment{Message: &ansDB.Message, Author: &ansDB.UserID, ID: commentID}
+	return &ans, nil
+}

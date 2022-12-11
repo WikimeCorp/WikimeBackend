@@ -21,3 +21,9 @@ type DeleteFromWatchedRequest struct {
 type DeleteFromFavoritesRequest struct {
 	AddToFavoritesRequest
 }
+
+type ShortUser struct {
+	ID       types.UserID `json:"id"`
+	Avatar   string       `json:"avatar"`
+	Nickname string       `json:"nickname"`
+}

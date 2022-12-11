@@ -1,8 +1,10 @@
 package anime
 
 import (
+	"path"
 	"time"
 
+	"github.com/WikimeCorp/WikimeBackend/config"
 	"github.com/WikimeCorp/WikimeBackend/types"
 	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
 )
@@ -23,6 +25,7 @@ type Anime struct {
 }
 
 func (a *Anime) NewDBModel() *dbtypes.Anime {
+	defaultPosterPath := path.Join(config.Config.ImagesPathURI, config.Config.DefaultAnimePosterPath)
 	return &dbtypes.Anime{
 		ID:          a.ID,
 		Title:       a.Title,
@@ -33,6 +36,7 @@ func (a *Anime) NewDBModel() *dbtypes.Anime {
 		ReleaseDate: a.ReleaseDate,
 		Author:      a.Author,
 		Images:      []string{},
+		Poster:      &defaultPosterPath,
 	}
 }
 

@@ -155,3 +155,18 @@ func CheckAnime(animeID types.AnimeID) (bool, error) {
 	ans, err := db.CheckAnime(animeID)
 	return ans, err
 }
+
+func Search(str string) ([]types.AnimeID, error) {
+	ans, err := db.SearchAnime(str)
+	return ans, err
+}
+
+func EditAnime(animeID types.AnimeID, anime *Anime) error {
+	dbAnime := anime.NewDBModel()
+	dbAnime.ID = animeID
+	err := db.EditTextFieldsAnime(dbAnime)
+	if err != nil {
+		return err
+	}
+	return nil
+}

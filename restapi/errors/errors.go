@@ -40,6 +40,7 @@ const (
 	fileTooBig
 	badFileFormat
 	commentNotFound
+	forbidden
 )
 
 var ErrBadJSONStruct = ErrBaseEndpointError{Message: "Bad json", ErrorCode: badJSONStruct}
@@ -48,7 +49,7 @@ var ErrUserNotFound = ErrBaseEndpointError{Message: "User not found", ErrorCode:
 var ErrJWTTokenNotFound = ErrBaseEndpointError{Message: "JWT token not found, check 'Authorization' header", ErrorCode: jwtTokenNotFound}
 var ErrJWTTokenTimeout = ErrBaseEndpointError{Message: "JWT token timeout", ErrorCode: jwtTokenTimeout}
 var ErrJWTTokenInvalidSignature = ErrBaseEndpointError{Message: "JWT token has invalid signature", ErrorCode: jwtTokenInvalidSignature}
-var ErrNotFound = ErrBaseEndpointError{Message: "Page not found", ErrorCode: notFound}
+var ErrNotFound = ErrBaseEndpointError{Message: "Page or object not found", ErrorCode: notFound}
 var ErrAnimeNotFound = ErrBaseEndpointError{Message: "Anime not found", ErrorCode: animeNotFound}
 var ErrInternalServerError = ErrBaseEndpointError{Message: "Internal server error", ErrorCode: internalServerError}
 var ErrBadValidate = ErrBaseEndpointError{Message: "Form invalid", ErrorCode: invalidForm}
@@ -58,11 +59,11 @@ var ErrFileTooBig = ErrBaseEndpointError{
 	ErrorCode: fileTooBig,
 }
 var ErrCommentNotFound = ErrBaseEndpointError{Message: "Comment not found", ErrorCode: commentNotFound}
-
 var ErrBadImageFormat = ErrBaseEndpointError{
 	Message:   "The provided file format is not allowed. Upload a JPEG or PNG.",
 	ErrorCode: badFileFormat,
 }
+var ErrForbidden = ErrBaseEndpointError{Message: "Forbidden", ErrorCode: forbidden}
 
 func SetErrorInResponce(err *ErrBaseEndpointError, w http.ResponseWriter, status int) {
 	w.WriteHeader(status)

@@ -1,5 +1,7 @@
 package types
 
+import "golang.org/x/exp/maps"
+
 type UserID uint32
 type AnimeID uint32
 type AnimeRating uint8
@@ -25,11 +27,36 @@ type JWTPayload struct {
 type Role string
 
 // Roles
-const (
+var (
+	RootRole      Role = "root"
+	AdminRole     Role = "admin"
+	ModeratorRole Role = "moderator"
 	UserRole      Role = "user"
-	AdminRole          = "admin"
-	ModeratorRole      = "moder"
+	DefaultRole        = UserRole
 )
+
+func CheckRole(role string) bool {
+	_, ok := rolesPriority[role]
+	if ok == false {
+		return false
+	}
+	return true
+}
+
+func GetRoles() []string {
+	return maps.Keys(rolesPriority)
+}
+
+var rolesPriority = map[string]int{
+	string(RootRole):      0,
+	string(AdminRole):     1,
+	string(ModeratorRole): 2,
+	string(UserRole):      3,
+}
+
+func (r *Role) GetPriority() int {
+	return rolesPriority[string(*r)]
+}
 
 type Pair[first, second any] struct {
 	First  first

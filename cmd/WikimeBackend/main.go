@@ -15,46 +15,66 @@ import (
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/user"
 
 	"github.com/WikimeCorp/WikimeBackend/restapi/middleware"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
-func setupRouter() *mux.Router {
+func setupRouter() http.Handler {
 	router := mux.NewRouter()
 
 	apiRouter := mux.NewRouter()
 
 	// Routers
-	userRouter := apiRouter.PathPrefix("/user").Subrouter()
+	usersRouter := apiRouter.PathPrefix("/users").Subrouter()
+	currentUserRouter := usersRouter.PathPrefix("/current").Subrouter()
 	animeRouter := apiRouter.PathPrefix("/anime").Subrouter()
 	commentsRouter := apiRouter.PathPrefix("/comments").Subrouter()
 	authRouter := apiRouter.PathPrefix("/auth/").Subrouter()
 
-	// User section
-	userRouter.Handle(
+	// Users section
+	usersRouter.Handle(
 		"/{user_id:[0-9]+}",
 		http.HandlerFunc(user.GetUserHandler()),
 	).Methods("GET")
-	userRouter.Handle(
+	usersRouter.HandleFunc(
+		"/moderators",
+		user.GetModeratorsHandler(),
+	).Methods("GET")
+	usersRouter.HandleFunc(
+		"/admins",
+		user.GetAdminsHandler(),
+	).Methods("GET")
+	usersRouter.Handle(
+		"/{user_id:[0-9]+}/role",
+		middleware.NeedAuthentication(http.HandlerFunc(user.ChangeRoleHandler())),
+	).Methods("PUT")
+	usersRouter.Handle(
+		"/{user_id:[0-9]+}/role",
+		middleware.NeedAuthentication(http.HandlerFunc(user.ResetRoleHandler())),
+	).Methods("DELETE")
+
+	// User section
+	currentUserRouter.Handle(
 		"",
 		middleware.NeedAuthentication(http.HandlerFunc(user.GetCurrentUserHandler())),
 	).Methods("GET")
-	userRouter.Handle(
+	currentUserRouter.Handle(
 		"/nickname",
 		middleware.NeedAuthentication(http.HandlerFunc(user.ChangeNicknameHandler())),
 	).Methods("PUT")
-	userRouter.Handle(
+	currentUserRouter.Handle(
 		"/favorites",
 		middleware.NeedAuthentication(http.HandlerFunc(user.AddToFavoritesHandler())),
 	).Methods("POST")
-	userRouter.Handle(
+	currentUserRouter.Handle(
 		"/favorites",
 		middleware.NeedAuthentication(http.HandlerFunc(user.DeleteFromFavoritesHandler())),
 	).Methods("DELETE")
-	userRouter.Handle(
+	currentUserRouter.Handle(
 		"/watched",
 		middleware.NeedAuthentication(http.HandlerFunc(user.AddToWatchedHandler())),
 	).Methods("POST")
-	userRouter.Handle(
+	currentUserRouter.Handle(
 		"/watched",
 		middleware.NeedAuthentication(http.HandlerFunc(user.DeleteFromWatchedHandler())),
 	).Methods("DELETE")
@@ -62,12 +82,28 @@ func setupRouter() *mux.Router {
 	// Anime section
 	animeRouter.HandleFunc(
 		"",
+		anime.SearchHandler(),
+	).Queries("search", "{search}").Methods("GET")
+	animeRouter.HandleFunc(
+		"",
 		anime.GetAnimesHangler(),
 	).Methods("GET")
+	animeRouter.Handle(
+		"",
+		middleware.NeedAuthentication(http.HandlerFunc(anime.CreateAnimeHandler())),
+	).Methods("POST")
 	animeRouter.HandleFunc(
 		"/{anime_id:[0-9]+}",
 		anime.GetAnimeByIDHandler(),
 	).Methods("GET")
+	animeRouter.HandleFunc(
+		"/{anime_id:[0-9]+}",
+		anime.EditAnimeHandler(),
+	).Methods("PUT")
+	animeRouter.HandleFunc(
+		"/{anime_id:[0-9]+}/average",
+		anime.SetAverageEndpoint,
+	).Methods("PUT")
 	animeRouter.HandleFunc(
 		"/list",
 		anime.GetAnimeByListIDHandler(),
@@ -75,15 +111,7 @@ func setupRouter() *mux.Router {
 	animeRouter.HandleFunc(
 		"/popular",
 		anime.MostPopularHandler(),
-	).Queries("count", "{count:[0-9]*+}").Methods("GET")
-	animeRouter.Handle(
-		"",
-		http.HandlerFunc(anime.CreateAnimeHandler()),
-	).Methods("POST")
-	animeRouter.HandleFunc(
-		"/{anime_id:[0-9]+}",
-		anime.SetAverageEndpoint,
-	).Methods("PUT")
+	).Queries("count", "{count:[0-9]+}").Methods("GET")
 
 	// Images section
 	router.PathPrefix("/images/").Handler(
@@ -92,28 +120,40 @@ func setupRouter() *mux.Router {
 			http.FileServer(http.Dir(path.Join(config.Config.ImagePathDisk, config.Config.ImagesPathURI))),
 		),
 	).Methods("GET")
-	animeRouter.HandleFunc(
-		"/{anime_id:[0-9]+}/image",
-		images.AddImageHandler(),
+	animeRouter.Handle(
+		"/{anime_id:[0-9]+}/images",
+		middleware.NeedAuthentication(http.HandlerFunc(images.AddImageHandler())),
 	).Methods("POST")
-	animeRouter.HandleFunc(
+	animeRouter.Handle(
 		"/{anime_id:[0-9]+}/poster",
-		images.SetPosterHandler(),
+		middleware.NeedAuthentication(http.HandlerFunc(images.SetPosterHandler())),
 	).Methods("POST")
+	currentUserRouter.Handle(
+		"/avatar",
+		middleware.NeedAuthentication(http.HandlerFunc(images.SetUserImageHandler())),
+	).Methods("POST")
+	animeRouter.Handle(
+		"/{anime_id:[0-9]+}/images/{image:.{1,100}}",
+		middleware.NeedAuthentication(http.HandlerFunc(images.DeleteImageFromAnimeHandler())),
+	).Methods("DELETE")
 
 	// Comment section
-	commentsRouter.HandleFunc(
+	commentsRouter.Handle(
 		"",
-		comments.CreateAnimeEndpoint,
+		middleware.NeedAuthentication(http.HandlerFunc(comments.CreateCommentEndpoint)),
 	).Methods("POST")
 	animeRouter.HandleFunc(
-		"/comments/{anime_id:[0-9]+}",
+		"/{anime_id:[0-9]+}/comments",
 		comments.GetCommentByIDEndpoint,
 	).Methods("GET")
+	commentsRouter.Handle(
+		"/{comment_id:[0-9a-z]{24}}",
+		middleware.NeedAuthentication(http.HandlerFunc(comments.DeleteCommentEndpoint)),
+	).Methods("DELETE")
 	commentsRouter.HandleFunc(
 		"/{comment_id:[0-9a-z]{24}}",
-		comments.DeleteCommentEndpoint,
-	).Methods("DELETE")
+		comments.GetCommentEndpoint,
+	).Methods("GET")
 
 	// Rating section
 	animeRouter.Handle(
@@ -124,7 +164,7 @@ func setupRouter() *mux.Router {
 	// Auth section
 	authRouter.HandleFunc("/vk", auth.OAuthVkHandler()).Methods("POST")
 
-	apiRouter.NotFoundHandler = http.HandlerFunc(other.NotFoundEndpoint)
+	router.NotFoundHandler = http.HandlerFunc(other.NotFoundEndpoint)
 
 	router.PathPrefix("/").Handler(middleware.SetJSONHeader(apiRouter))
 	return router
@@ -139,6 +179,10 @@ func Start() error {
 
 	addr := config.Addr + ":" + config.Port
 	log.Println(addr)
-	err := http.ListenAndServe(addr, handler)
+
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
+
+	err := http.ListenAndServe(addr, middleware.PrintRequestURL(handlers.CORS(headersOk, methodsOk)(handler)))
 	return err
 }

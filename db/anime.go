@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func createAnimeDoc(title string, originTitle string, author UserID) (*dbtypes.Anime, error) {
+func createAnimeDoc(title string, originTitle string, author UserID, poster string) (*dbtypes.Anime, error) {
 	user, err := CheckUser(author)
 	if err != nil {
 		return nil, err
@@ -34,6 +34,7 @@ func createAnimeDoc(title string, originTitle string, author UserID) (*dbtypes.A
 		OriginTitle: originTitle,
 		DateAdded:   time.Now(),
 		Rating:      &dbtypes.Rating{},
+		Poster:      &poster,
 	}
 	_, err = animeCollection.InsertOne(ctx, anime)
 
@@ -52,13 +53,48 @@ func CheckAnime(id AnimeID) (bool, error) {
 	return true, nil
 }
 
-func EditAnime(animeObjPtr *dbtypes.Anime) error {
+func ReplaceAnime(animeObjPtr *dbtypes.Anime) error {
 	err := animeCollection.FindOneAndReplace(ctx, bson.M{"_id": animeObjPtr.ID}, &animeObjPtr).Err()
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return &inerr.ErrAnimeNotFound{animeObjPtr.ID}
 		}
 		return err
+	}
+
+	return nil
+}
+
+func EditTextFieldsAnime(animeObj *dbtypes.Anime) error {
+	animeID := animeObj.ID
+
+	req := bson.M{}
+	if animeObj.Title != "" {
+		req["Title"] = animeObj.Title
+	}
+	if animeObj.OriginTitle != "" {
+		req["OriginTitle"] = animeObj.OriginTitle
+	}
+	if animeObj.Genres != nil && len(animeObj.Genres) != 0 {
+		req["Genres"] = animeObj.Genres
+	}
+	if animeObj.Description != "" {
+		req["Description"] = animeObj.Description
+	}
+	if animeObj.Director != "" {
+		req["Director"] = animeObj.Director
+	}
+	if true { // Need add valid check
+		req["ReleaseDate"] = animeObj.ReleaseDate
+	}
+
+	ans, err := animeCollection.UpdateOne(ctx, bson.M{"_id": animeID}, bson.M{"$set": req})
+	if err != nil {
+		return err
+	}
+
+	if ans.MatchedCount == 0 {
+		return &inerr.ErrAnimeNotFound{AnimeID: animeID}
 	}
 
 	return nil
@@ -167,4 +203,14 @@ func GetAnimeIDsSortedByReleaseDate(genres []string, order int8, limit ...int) (
 	}
 
 	return decodeAnimesToIDList(cursor)
+}
+
+func SearchAnime(text string) ([]AnimeID, error) {
+	opt := options.Find().SetSort(bson.D{{"Rating.Average", -1}})
+	opt = opt.SetLimit(15)
+	cur, err := animeCollection.Find(ctx, bson.M{"$text": bson.M{"$search": text}}, opt)
+	if err != nil {
+		return nil, err
+	}
+	return decodeAnimesToIDList(cur)
 }

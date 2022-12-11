@@ -97,3 +97,45 @@ func GetComments(animeID AnimeID) ([]dbtypes.Comment, error) {
 	}
 	return comments.Comments, nil
 }
+
+func CheckCommentAuthor(commentID *CommentID, userID UserID) (bool, error) {
+	commID, err := primitive.ObjectIDFromHex(string(*commentID))
+	err = commentsCollection.FindOne(ctx, bson.M{"Comments": bson.M{"$elemMatch": bson.M{"_id": commID, "UserId": userID}}}).Err()
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
+}
+
+func GetComment(commentID *CommentID) (*dbtypes.Comment, error) {
+	commID, _ := primitive.ObjectIDFromHex(string(*commentID))
+	matchStage := bson.D{{"$match", bson.D{{"Comments", bson.D{{"$elemMatch", bson.D{{"_id", commID}}}}}}}}
+	unwindStage := bson.D{{"$unwind", "$Comments"}}
+	match2Stage := bson.D{{"$match", bson.D{{"Comments._id", commID}}}}
+	finalStage := bson.D{{"$replaceRoot", bson.D{{"newRoot", "$Comments"}}}}
+
+	cur, err := commentsCollection.Aggregate(ctx, mongo.Pipeline{matchStage, unwindStage, match2Stage, finalStage})
+	if err != nil {
+		return nil, err
+	}
+	results := make([]*dbtypes.Comment, 0)
+	for cur.Next(ctx) {
+		elem := dbtypes.Comment{}
+		err := cur.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, &elem)
+	}
+	if len(results) == 0 {
+		return nil, inerr.ErrCommentNotFound
+	}
+	ans := results[0]
+
+	return ans, nil
+}

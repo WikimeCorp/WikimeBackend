@@ -2,10 +2,14 @@ package comments
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
+	"github.com/WikimeCorp/WikimeBackend/applogic/authentication"
 	"github.com/WikimeCorp/WikimeBackend/applogic/comments"
+	"github.com/WikimeCorp/WikimeBackend/applogic/user"
+	"github.com/WikimeCorp/WikimeBackend/dependencies"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/other"
 	"github.com/WikimeCorp/WikimeBackend/types"
 	"github.com/WikimeCorp/WikimeBackend/types/myerrors"
@@ -14,8 +18,8 @@ import (
 	apiErrors "github.com/WikimeCorp/WikimeBackend/restapi/errors"
 )
 
-func CreateAnimeEndpoint(w http.ResponseWriter, req *http.Request) {
-	userID := 0 // Add getting user id from context
+func CreateCommentEndpoint(w http.ResponseWriter, req *http.Request) {
+	userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
 
 	commentReq := CreateCommentRequest{}
 	err := other.CheckRequestJSONData(w, req, &commentReq)
@@ -55,10 +59,39 @@ func GetCommentByIDEndpoint(w http.ResponseWriter, req *http.Request) {
 }
 
 func DeleteCommentEndpoint(w http.ResponseWriter, req *http.Request) {
+	userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+	user, err := user.GetUser(userID)
+	if err != nil {
+		switch err.(type) {
+		default:
+			apiErrors.SetErrorInResponce(&apiErrors.ErrInternalServerError, w, http.StatusInternalServerError)
+		}
+		return
+	}
+
 	_commentID, _ := mux.Vars(req)["comment_id"]
 	commentID := types.CommentID(_commentID)
 
-	err := comments.DeleteComment(&commentID)
+	commentObj, err := comments.GetComment(&commentID)
+	if err != nil {
+		if errors.Is(err, myerrors.ErrCommentNotFound) {
+			apiErrors.SetErrorInResponce(&apiErrors.ErrCommentNotFound, w, http.StatusNotFound)
+			return
+		}
+	}
+
+	authAns := authentication.AnyOne(
+		authentication.CheckAdmin(user),
+		authentication.CheckModeratorRole(user),
+		authentication.CheckUserCreatedComment(user, commentObj),
+	)
+
+	if authAns.Bool() == false {
+		apiErrors.SetErrorInResponce(apiErrors.ErrForbidden.SetNewMessage(authAns.MessageIfFalse()), w, http.StatusForbidden)
+		return
+	}
+
+	err = comments.DeleteComment(&commentID)
 	if err != nil {
 		if err == myerrors.ErrCommentNotFound {
 			apiErrors.SetErrorInResponce(&apiErrors.ErrCommentNotFound, w, http.StatusNotFound)
@@ -67,4 +100,20 @@ func DeleteCommentEndpoint(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+}
+
+func GetCommentEndpoint(w http.ResponseWriter, req *http.Request) {
+	_commentID, _ := mux.Vars(req)["comment_id"]
+	commentID := types.CommentID(_commentID)
+
+	ans, err := comments.GetComment(&commentID)
+	if err != nil {
+		if errors.Is(err, myerrors.ErrCommentNotFound) {
+			apiErrors.SetErrorInResponce(&apiErrors.ErrCommentNotFound, w, http.StatusNotFound)
+			return
+		}
+	}
+
+	ansBytes, _ := json.Marshal(ans)
+	w.Write(ansBytes)
 }

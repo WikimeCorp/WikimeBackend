@@ -13,7 +13,7 @@ import (
 
 // AddAnime creates anime correctly
 func AddAnime(anime *dbtypes.Anime) (ansAnimeID AnimeID, err error) {
-	newAnime, err := createAnimeDoc(anime.Title, anime.OriginTitle, anime.Author)
+	newAnime, err := createAnimeDoc(anime.Title, anime.OriginTitle, anime.Author, *anime.Poster)
 	if err != nil {
 		return 0, err
 	}
@@ -22,7 +22,7 @@ func AddAnime(anime *dbtypes.Anime) (ansAnimeID AnimeID, err error) {
 	anime.DateAdded = newAnime.DateAdded
 	anime.Rating = newAnime.Rating
 
-	err = EditAnime(anime)
+	err = ReplaceAnime(anime)
 	if err != nil {
 		return
 	}

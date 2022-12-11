@@ -11,17 +11,7 @@ func GetUser(userID types.UserID) (*UserModel, error) {
 	if err != nil {
 		return nil, err
 	}
-	ans := &UserModel{
-		UserID:    user.ID,
-		Nickname:  user.Nickname,
-		Role:      user.Role,
-		Favorites: user.Favorites,
-		Watched:   user.Watched,
-		Rated: []struct {
-			ID   types.AnimeID
-			Rate types.AnimeRating
-		}(user.Rated),
-	}
+	ans := UserModelFromDBUser(user)
 	return ans, err
 }
 
@@ -48,4 +38,23 @@ func DeleteFromFavorites(userID types.UserID, animeID types.AnimeID) error {
 func DeleteFromWatched(userID types.UserID, animeID types.AnimeID) error {
 	err := db.DeleteAnimeFromWatched(animeID, userID)
 	return err
+}
+
+func ChangeRole(userID types.UserID, role types.Role) error {
+	return db.ChangeRole(userID, role)
+}
+
+func GetUsersByRole(role types.Role) ([]UserModel, error) {
+	ans, err := db.GetUsersByRole(role)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]UserModel, 0)
+	for _, el := range ans {
+		user := UserModelFromDBUser(el)
+		res = append(res, *user)
+	}
+
+	return res, nil
 }

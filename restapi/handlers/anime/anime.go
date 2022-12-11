@@ -10,10 +10,11 @@ import (
 	"strings"
 
 	"github.com/WikimeCorp/WikimeBackend/applogic/anime"
+	"github.com/WikimeCorp/WikimeBackend/applogic/authentication"
+	"github.com/WikimeCorp/WikimeBackend/applogic/user"
 	"github.com/WikimeCorp/WikimeBackend/dependencies"
 	"github.com/WikimeCorp/WikimeBackend/types"
 	"github.com/WikimeCorp/WikimeBackend/types/myerrors"
-	"github.com/go-playground/validator/v10"
 
 	apiErrors "github.com/WikimeCorp/WikimeBackend/restapi/errors"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/other"
@@ -44,29 +45,36 @@ func GetAnimeByIDHandler() func(http.ResponseWriter, *http.Request) {
 // CreateAnimeHandler ...
 func CreateAnimeHandler() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		animeReq := &AnimeCreateRequest{}
-		err := json.NewDecoder(req.Body).Decode(animeReq)
-
+		userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+		user, err := user.GetUser(userID)
 		if err != nil {
-			fmt.Println(err)
-			apiErrors.SetErrorInResponce(&apiErrors.ErrBadJSONStruct, w, http.StatusBadRequest)
-			return
-		}
-
-		err = dependencies.Validate.Struct(animeReq)
-
-		if err != nil {
-			tmpErrors := make([]string, 0)
-			for _, err := range err.(validator.ValidationErrors) {
-				tmpErrors = append(tmpErrors, err.Error())
+			switch err.(type) {
+			default:
+				apiErrors.SetErrorInResponce(&apiErrors.ErrInternalServerError, w, http.StatusInternalServerError)
 			}
-
-			err := apiErrors.ErrValidate(tmpErrors)
-			apiErrors.SetErrorInResponce(err, w, http.StatusBadRequest)
 			return
 		}
 
-		animeID, err := anime.CreateAnime(animeReq.NewAnimeModel())
+		authAns := authentication.AnyOne(
+			authentication.CheckAdmin(user),
+			authentication.CheckModeratorRole(user),
+		)
+
+		if authAns.Bool() == false {
+			apiErrors.SetErrorInResponce(apiErrors.ErrForbidden.SetNewMessage(authAns.MessageIfFalse()), w, http.StatusForbidden)
+			return
+		}
+
+		animeReq := &AnimeCreateRequest{}
+		err = other.CheckRequestJSONData(w, req, animeReq)
+		if err != nil {
+			return
+		}
+
+		animeObj := animeReq.NewAnimeModel()
+		animeObj.Author = userID
+
+		animeID, err := anime.CreateAnime(animeObj)
 		if err != nil {
 			log.Println("createAnimeEndpoint CreateAnime error", err)
 			return
@@ -82,13 +90,38 @@ func CreateAnimeHandler() func(http.ResponseWriter, *http.Request) {
 // GetAnimeByListIDHandler ...
 func GetAnimeByListIDHandler() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		animeListReq := AnimeByListIDRequest{}
-		err := other.CheckRequestJSONData(w, req, &animeListReq)
-		if err != nil {
+		idsStrs := req.URL.Query()["id"]
+		if len(idsStrs) == 0 {
+			apiErrors.SetErrorInResponce(
+				apiErrors.ErrBadRequest.SetNewMessage("need 'id'"),
+				w,
+				http.StatusBadRequest,
+			)
+			return
+		} else if len(idsStrs) > 50 {
+			apiErrors.SetErrorInResponce(
+				apiErrors.ErrBadRequest.SetNewMessage("max 50 ids"),
+				w,
+				http.StatusBadRequest,
+			)
 			return
 		}
 
-		animeList, err := anime.GetAnimesByListID(animeListReq.IDs)
+		ids := make([]types.AnimeID, len(idsStrs))
+		for idx, el := range idsStrs {
+			id, err := strconv.Atoi(el)
+			if err != nil {
+				apiErrors.SetErrorInResponce(
+					apiErrors.ErrBadRequest.SetNewMessage(el+" is not a number"),
+					w,
+					http.StatusBadRequest,
+				)
+				return
+			}
+			ids[idx] = types.AnimeID(id)
+		}
+
+		animeList, err := anime.GetAnimesByListID(ids)
 
 		var errAnimeNotFound *myerrors.ErrAnimeNotFound
 
@@ -106,8 +139,7 @@ func GetAnimeByListIDHandler() func(http.ResponseWriter, *http.Request) {
 
 		}
 
-		animeListRes := AnimeByListIDResponce{Animes: animeList}
-		ans, _ := json.Marshal(animeListRes)
+		ans, _ := json.Marshal(animeList)
 		w.Write(ans)
 	}
 }
@@ -179,10 +211,7 @@ func GetAnimesHangler() func(http.ResponseWriter, *http.Request) {
 			}
 		}
 
-		ansStruct := struct {
-			AnimeIDs []types.AnimeID `json:"animeIDs"`
-		}{animesIDs}
-		ans, _ := json.Marshal(ansStruct)
+		ans, _ := json.Marshal(animesIDs)
 		w.Write(ans)
 
 	}
@@ -215,6 +244,14 @@ func MostPopularHandler() func(http.ResponseWriter, *http.Request) {
 				apiErrors.ErrBadRequest.SetNewMessage("Invalid 'count' type, must be uint"),
 				w,
 				http.StatusBadRequest)
+			return
+		}
+		if count > 50 {
+			apiErrors.SetErrorInResponce(
+				apiErrors.ErrBadRequest.SetNewMessage("Invalid 'count', must less than 51"),
+				w,
+				http.StatusBadRequest)
+			return
 		}
 
 		animes, err := anime.GetMostPopular(count)
@@ -227,5 +264,61 @@ func MostPopularHandler() func(http.ResponseWriter, *http.Request) {
 
 		ans, _ := json.Marshal(animes)
 		w.Write(ans)
+	}
+}
+
+func SearchHandler() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		toSearch := req.URL.Query().Get("search")
+		if toSearch == "" {
+			apiErrors.SetErrorInResponce(
+				apiErrors.ErrBadRequest.SetNewMessage("search must be not null"),
+				w,
+				http.StatusBadRequest,
+			)
+			return
+		} else if len(toSearch) < 3 {
+			apiErrors.SetErrorInResponce(
+				apiErrors.ErrBadRequest.SetNewMessage("search must have len > 2"),
+				w,
+				http.StatusBadRequest,
+			)
+			return
+		}
+		animes, err := anime.Search(toSearch)
+		if err != nil {
+			switch err.(type) {
+			default:
+				return
+			}
+		}
+
+		ans, _ := json.Marshal(animes)
+		w.Write(ans)
+	}
+}
+
+func EditAnimeHandler() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		_animeID, _ := strconv.Atoi(mux.Vars(req)["anime_id"])
+		animeID := types.AnimeID(_animeID)
+
+		reqData := EditAnimeRequest{}
+		err := other.CheckRequestJSONData(w, req, &reqData)
+		if err != nil {
+			return
+		}
+
+		err = anime.EditAnime(animeID, reqData.NewAnimeModel())
+		if err != nil {
+			switch err.(type) {
+			case *myerrors.ErrAnimeNotFound:
+				apiErrors.SetErrorInResponce(&apiErrors.ErrAnimeNotFound, w, http.StatusNotFound)
+				return
+			}
+			apiErrors.SetErrorInResponce(&apiErrors.ErrInternalServerError, w, http.StatusInternalServerError)
+			return
+		}
+
 	}
 }

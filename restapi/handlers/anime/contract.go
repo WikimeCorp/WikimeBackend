@@ -16,6 +16,10 @@ type AnimeCreateRequest struct {
 	ReleaseDate *int64   `validate:"required" json:"releaseDate"`
 }
 
+type EditAnimeRequest struct {
+	AnimeCreateRequest
+}
+
 func (a *AnimeCreateRequest) NewAnimeModel() *anime.Anime {
 	return &anime.Anime{
 		Title:       a.Title,

@@ -10,16 +10,18 @@ import (
 )
 
 type config struct {
-	ImagePathDisk       string `config:"IMAGES_PATH_DISK"`
-	Addr                string `config:"APP_IP"`
-	Port                string `config:"APP_PORT"`
-	MongoURL            string `config:"MONGO_URL"`
-	DataBaseName        string `config:"DB_NAME"`
-	VKAPIVersion        string `config:"VKAPIVersion"`
-	SecretKeyForHash    string `config:"SECRET_KEY_HASH"`
-	JWTLifeTime         string `config:"JWT_LIFE_TIME"`
-	ImagesPathURI       string `config:"IMAGES_PATH_URI"`
-	MaxUploadedFileSize int64  `config:"MAX_UPLOADED_FILE_SIZE"`
+	ImagePathDisk          string `config:"IMAGES_PATH_DISK"`
+	Addr                   string `config:"APP_IP"`
+	Port                   string `config:"APP_PORT"`
+	MongoURL               string `config:"MONGO_URL"`
+	DataBaseName           string `config:"DB_NAME"`
+	VKAPIVersion           string `config:"VKAPIVersion"`
+	SecretKeyForHash       string `config:"SECRET_KEY_HASH"`
+	JWTLifeTime            string `config:"JWT_LIFE_TIME"`
+	ImagesPathURI          string `config:"IMAGES_PATH_URI"`
+	MaxUploadedFileSize    int64  `config:"MAX_UPLOADED_FILE_SIZE"`
+	DefaultAnimePosterPath string `config:"DEFAULT_ANIME_POSTER_PATH"`
+	DefaultUserAvatarPath  string `config:"DEFAULT_USER_AVATAR_PATH"`
 }
 
 var Config config

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path"
 	"strconv"
 
 	"github.com/WikimeCorp/WikimeBackend/config"
@@ -46,7 +47,7 @@ func getInnerUserIDForVk(token string) (UserID, error) {
 }
 
 func registerUser[T OuterIDs](outerID T) (userID UserID, err error) {
-	userID, err = db.CreateUserDoc("")
+	userID, err = db.CreateUserDoc("", path.Join(config.Config.ImagesPathURI, config.Config.DefaultUserAvatarPath))
 	if err != nil {
 		return 0, err
 	}

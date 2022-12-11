@@ -43,6 +43,7 @@ type User struct {
 	Role      string    `bson:"Role"`
 	Favorites []AnimeID `bson:"Favorites"`
 	Watched   []AnimeID `bson:"Watched"`
+	Avatar    string    `bson:"Avatar"`
 	Rated     []struct {
 		ID   AnimeID     `bson:"AnimeId"`
 		Rate AnimeRating `bson:"Rate"`

@@ -42,7 +42,7 @@ func CheckUser(id UserID) (bool, error) {
 
 }
 
-func CreateUserDoc(nickname string) (UserID, error) {
+func CreateUserDoc(nickname string, avatarPath string) (UserID, error) {
 	userID, err := getNextID[UserID]("UserID")
 	if err != nil {
 		return 0, err
@@ -54,6 +54,7 @@ func CreateUserDoc(nickname string) (UserID, error) {
 		Role:      string(UserRole),
 		Favorites: []AnimeID{},
 		Watched:   []AnimeID{},
+		Avatar:    avatarPath,
 		Rated: []struct {
 			ID   AnimeID     `bson:"AnimeId"`
 			Rate AnimeRating `bson:"Rate"`
@@ -171,4 +172,34 @@ func checkInRated(animeID AnimeID, userID UserID) (bool, error) {
 func RemoveUser(id UserID) error {
 	_, err := usersCollection.DeleteOne(ctx, bson.M{"_id": id})
 	return err
+}
+
+func ChangeRole(userID UserID, role Role) error {
+	_, err := usersCollection.UpdateOne(ctx, bson.M{"_id": userID}, bson.M{"$set": bson.M{"Role": string(role)}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetUsersByRole(role Role) ([]*dbtypes.User, error) {
+	cur, err := usersCollection.Find(ctx, bson.M{"Role": role})
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]*dbtypes.User, 0)
+
+	for cur.Next(ctx) {
+
+		elem := dbtypes.User{}
+
+		err := cur.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, &elem)
+	}
+
+	return results, nil
 }
