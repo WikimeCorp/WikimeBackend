@@ -19,21 +19,27 @@ import (
 )
 
 // GetUserHandler return get user handler
-func GetUserHandler() func(w http.ResponseWriter, req *http.Request) {
+func GetUserHandler(userIDGetter func(*http.Request) types.UserID) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		userID, _ := strconv.Atoi(mux.Vars(req)["user_id"])
-		user, err := user.GetUser(types.UserID(userID))
+		userID := userIDGetter(req)
+		userObj, err := user.GetUser(userID)
 
 		var errUserNotFound *myerrors.ErrUserNotFound
 
 		if err != nil {
 			if errors.As(err, &errUserNotFound) {
-				apiErrors.SetErrorInResponce(&apiErrors.ErrUserNotFound, w, http.StatusUnauthorized)
+				apiErrors.SetErrorInResponce(&apiErrors.ErrUserNotFound, w, http.StatusNotFound)
 				return
 			}
 		}
 
-		jsonAns, _ := json.Marshal(user)
+		addedAnime, err := user.GetAddedAnimeByUser(userID)
+		if err != nil {
+			apiErrors.SetErrorInResponce(&apiErrors.ErrInternalServerError, w, http.StatusInternalServerError)
+			return
+		}
+		ansUser := User{UserModel: *userObj, Added: addedAnime}
+		jsonAns, _ := json.Marshal(ansUser)
 
 		w.Write(jsonAns)
 	}
@@ -57,10 +63,10 @@ func ChangeNicknameHandler() func(http.ResponseWriter, *http.Request) {
 }
 
 // GetCurrentUserHandler return get current user handler
-func GetCurrentUserHandler() func(http.ResponseWriter, *http.Request) {
+func GetCurrentUserHandler(userIDGetter func(*http.Request) types.UserID) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 
-		userID := req.Context().Value(dependencies.CtxUserID).(types.UserID)
+		userID := userIDGetter(req)
 		user, err := user.GetUser(userID)
 
 		var errUserNotFound *myerrors.ErrUserNotFound

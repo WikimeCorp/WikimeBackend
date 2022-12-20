@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	. "github.com/WikimeCorp/WikimeBackend/types"
 	"github.com/WikimeCorp/WikimeBackend/types/dbtypes"
@@ -58,15 +59,20 @@ func Rate(animeID AnimeID, userID UserID, rate AnimeRating) error {
 		options.FindOneAndUpdate().SetProjection(oneRateProj),
 	).Decode(user)
 
+	log.Println("SAFE METHOD ERR: ", err)
+
 	if err == nil {
 		err := ChangeRating(animeID, user.Rated[0].Rate, rate)
+		log.Println("3: ", err)
 		return err
 	} else if errors.Is(err, mongo.ErrNoDocuments) {
 		err := addToRated(userID, animeID, rate)
+		log.Println("1: ", err)
 		if err != nil {
 			return err
 		}
 		err = addRate(animeID, rate)
+		log.Println("2: ", err)
 		return err
 	} else if err != nil {
 		return err

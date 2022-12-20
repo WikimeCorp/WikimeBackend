@@ -16,7 +16,7 @@ func genresToBsonArray(genres []string) bson.A {
 	return genresArray
 }
 
-func generateSortingWithGenres(field string, genres []string, order int8, limit int) bson.A {
+func generateSortingWithGenres(field string, genres []string, order int8, limit int, skip int) bson.A {
 	genresArray := genresToBsonArray(genres)
 
 	ans := bson.A{
@@ -33,7 +33,9 @@ func generateSortingWithGenres(field string, genres []string, order int8, limit 
 			{Key: "$sort", Value: bson.D{{Key: field, Value: order}}},
 		},
 	}
-
+	if skip != -1 {
+		ans = append(ans, bson.D{{"$skip", limit}})
+	}
 	if limit != -1 {
 		ans = append(ans, bson.D{{"$limit", limit}})
 	}
@@ -42,21 +44,21 @@ func generateSortingWithGenres(field string, genres []string, order int8, limit 
 }
 
 // GetAnimesSortedByRatingWithGenres generate mongodb request for *see func name*
-func GetAnimesSortedByRatingWithGenres(genres []string, order int8, limit int) bson.A {
-	return generateSortingWithGenres("Rating.Average", genres, order, limit)
+func GetAnimesSortedByRatingWithGenres(genres []string, order int8, limit int, skip int) bson.A {
+	return generateSortingWithGenres("Rating.Average", genres, order, limit, skip)
 }
 
 // GetAnimeSortedByAddingDateWithGenres generate mongodb request for *see func name*
-func GetAnimeSortedByAddingDateWithGenres(genres []string, order int8, limit int) bson.A {
-	return generateSortingWithGenres("DateAdded", genres, order, limit)
+func GetAnimeSortedByAddingDateWithGenres(genres []string, order int8, limit int, skip int) bson.A {
+	return generateSortingWithGenres("DateAdded", genres, order, limit, skip)
 }
 
 // GetAnimeSortedByReleaseDateWithGenres generate mongodb request for *see func name*
-func GetAnimeSortedByReleaseDateWithGenres(genres []string, order int8, limit int) bson.A {
-	return generateSortingWithGenres("ReleaseDate", genres, order, limit)
+func GetAnimeSortedByReleaseDateWithGenres(genres []string, order int8, limit int, skip int) bson.A {
+	return generateSortingWithGenres("ReleaseDate", genres, order, limit, skip)
 }
 
 // GetAnimeSortedByFavoritesWithGenres generate mongodb request for *see func name*
-func GetAnimeSortedByFavoritesWithGenres(genres []string, order int8, limit int) bson.A {
-	return generateSortingWithGenres("Rating.InFavorites", genres, order, limit)
+func GetAnimeSortedByFavoritesWithGenres(genres []string, order int8, limit int, skip int) bson.A {
+	return generateSortingWithGenres("Rating.InFavorites", genres, order, limit, skip)
 }

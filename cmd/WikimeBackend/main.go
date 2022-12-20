@@ -3,9 +3,12 @@ package wikimebackend
 import (
 	"log"
 	"net/http"
+	"os"
 	"path"
+	"strconv"
 
 	"github.com/WikimeCorp/WikimeBackend/config"
+	"github.com/WikimeCorp/WikimeBackend/dependencies"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/anime"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/auth"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/comments"
@@ -13,6 +16,7 @@ import (
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/other"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/rating"
 	"github.com/WikimeCorp/WikimeBackend/restapi/handlers/user"
+	"github.com/WikimeCorp/WikimeBackend/types"
 
 	"github.com/WikimeCorp/WikimeBackend/restapi/middleware"
 	"github.com/gorilla/handlers"
@@ -34,7 +38,10 @@ func setupRouter() http.Handler {
 	// Users section
 	usersRouter.Handle(
 		"/{user_id:[0-9]+}",
-		http.HandlerFunc(user.GetUserHandler()),
+		http.HandlerFunc(user.GetUserHandler(func(req *http.Request) types.UserID {
+			tmp, _ := strconv.Atoi(mux.Vars(req)["user_id"])
+			return types.UserID(tmp)
+		})),
 	).Methods("GET")
 	usersRouter.HandleFunc(
 		"/moderators",
@@ -56,8 +63,18 @@ func setupRouter() http.Handler {
 	// User section
 	currentUserRouter.Handle(
 		"",
-		middleware.NeedAuthentication(http.HandlerFunc(user.GetCurrentUserHandler())),
+		middleware.NeedAuthentication(http.HandlerFunc(user.GetUserHandler(
+			func(req *http.Request) types.UserID {
+				return req.Context().Value(dependencies.CtxUserID).(types.UserID)
+			}))),
 	).Methods("GET")
+	// currentUserRouter.Handle(
+	// 	"",
+	// 	middleware.NeedAuthentication(http.HandlerFunc(user.GetCurrentUserHandler(
+	// 		func(req *http.Request) types.UserID {
+	// 			return req.Context().Value(dependencies.CtxUserID).(types.UserID)
+	// 		}))),
+	// ).Methods("GET")
 	currentUserRouter.Handle(
 		"/nickname",
 		middleware.NeedAuthentication(http.HandlerFunc(user.ChangeNicknameHandler())),
@@ -174,6 +191,13 @@ func setupRouter() http.Handler {
 func Start() error {
 	config := config.Config
 	router := setupRouter()
+
+	f, err1 := os.OpenFile(config.LogFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err1 != nil {
+		log.Fatalf("error opening file: %v", err1)
+	}
+	defer f.Close()
+	log.SetOutput(f)
 
 	handler := router
 

@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"log"
 
 	dbrequests "github.com/WikimeCorp/WikimeBackend/db/db_requests"
 	. "github.com/WikimeCorp/WikimeBackend/types"
@@ -41,8 +42,12 @@ func ChangeRating(id AnimeID, from AnimeRating, to AnimeRating) error {
 	if !ok {
 		return fmt.Errorf("invalid 'rate' argument: %d. Must be 1, 2, 3, 4 or 5", to)
 	}
+	if from == to {
+		return nil
+	}
 
 	ans, err := animeCollection.UpdateByID(ctx, id, dbrequests.ChangeRating(fromRateName, toRateName))
+	log.Println("ChangeRating err: ", err)
 	if err != nil {
 		return err
 	}
@@ -96,6 +101,7 @@ func addRate(id AnimeID, rate AnimeRating) (err error) {
 	}
 
 	ans, err := animeCollection.UpdateByID(ctx, id, dbrequests.AddRate(rateName))
+	log.Println("addRate err: ", err)
 	if err != nil {
 		return err
 	}

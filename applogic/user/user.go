@@ -15,6 +15,10 @@ func GetUser(userID types.UserID) (*UserModel, error) {
 	return ans, err
 }
 
+func GetAddedAnimeByUser(userID types.UserID) ([]types.AnimeID, error) {
+	return db.GetAnimeAddedByUser(userID)
+}
+
 func SetNickname(userID types.UserID, newNickname string) error {
 	err := db.EditNickname(userID, newNickname)
 	return err

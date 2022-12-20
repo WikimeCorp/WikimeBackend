@@ -22,6 +22,7 @@ type config struct {
 	MaxUploadedFileSize    int64  `config:"MAX_UPLOADED_FILE_SIZE"`
 	DefaultAnimePosterPath string `config:"DEFAULT_ANIME_POSTER_PATH"`
 	DefaultUserAvatarPath  string `config:"DEFAULT_USER_AVATAR_PATH"`
+	LogFilePath            string `config:"LOG_FILE_PATH"`
 }
 
 var Config config

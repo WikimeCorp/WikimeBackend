@@ -31,7 +31,7 @@ func (a *AnimeCreateRequest) NewAnimeModel() *anime.Anime {
 	}
 }
 
-type AnimeResponce struct {
+type CreateAnimeResponce struct {
 	AnimeID types.AnimeID `json:"animeId"`
 }
 

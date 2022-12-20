@@ -1,0 +1,48 @@
+version: "3"
+services:
+  mongo_db:
+    container_name: mongo_db
+    image: mongo:5.0
+    ports:
+      - 27018:27017
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./data/mongo:/data/db
+      - ./data/mongo_config:/data/configdb
+    environment:
+      MONGO_INITDB_DATABASE: Wikime_test_performance
+    networks:
+      - api
+  backend:
+    image: wikime_test
+    depends_on:
+      - mongo_db
+    volumes:
+      - type: bind
+        source: ./log.log
+        target: /src/backend/orders.log
+      - ./images:/src/backend/images
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    networks:
+      - api
+    environment:
+      IMAGES_PATH_URI: ${IMAGES_PATH_URI}
+      IMAGES_PATH_DISK: ${IMAGES_PATH_DISK}
+      DEFAULT_ANIME_POSTER_PATH: ${DEFAULT_ANIME_POSTER_PATH}
+      DEFAULT_USER_AVATAR_PATH: ${DEFAULT_USER_AVATAR_PATH}
+      APP_IP: ${APP_IP}
+      APP_PORT: ${APP_PORT}
+      VKAPIVersion: ${VKAPIVersion}
+      SECRET_KEY_HASH: ${SECRET_KEY_HASH}
+      JWT_LIFE_TIME: ${JWT_LIFE_TIME}
+
+      MONGO_URL: ${MONGO_URL}
+
+      DB_NAME: ${DB_NAME}
+      MAX_UPLOADED_FILE_SIZE: ${MAX_UPLOADED_FILE_SIZE}
+      LOG_FILE_PATH: ${LOG_FILE_PATH}
+
+networks:
+  api:
+    driver: bridge

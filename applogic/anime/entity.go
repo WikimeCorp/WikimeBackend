@@ -1,6 +1,7 @@
 package anime
 
 import (
+	"encoding/json"
 	"path"
 	"time"
 
@@ -18,10 +19,23 @@ type Anime struct {
 	Poster      *string       `json:"poster"`
 	Images      []string      `json:"images"`
 	Director    string        `json:"director"`
-	DateAdded   time.Time     `json:"dataAded"`
+	DateAdded   time.Time     `json:"dataAdded"`
 	ReleaseDate time.Time     `json:"releaseDate"`
 	Author      types.UserID  `json:"author"`
 	Rating      Rating        `json:"rating"`
+}
+
+func (d *Anime) MarshalJSON() ([]byte, error) {
+	type Alias Anime
+	return json.Marshal(&struct {
+		*Alias
+		DateAdded   string `json:"dataAdded"`
+		ReleaseDate string `json:"releaseDate"`
+	}{
+		Alias:       (*Alias)(d),
+		DateAdded:   d.DateAdded.Format("02.01.2006"),
+		ReleaseDate: d.ReleaseDate.Format("02.01.2006"),
+	})
 }
 
 func (a *Anime) NewDBModel() *dbtypes.Anime {

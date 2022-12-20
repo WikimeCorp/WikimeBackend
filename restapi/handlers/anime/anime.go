@@ -80,7 +80,7 @@ func CreateAnimeHandler() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		ans, err := json.Marshal(AnimeResponce{AnimeID: animeID})
+		ans, err := json.Marshal(CreateAnimeResponce{AnimeID: animeID})
 
 		w.Write(ans)
 

@@ -28,13 +28,16 @@ func SetRatingHandler() func(http.ResponseWriter, *http.Request) {
 		}
 
 		err = anime.SetRating(userID, animeID, *reqData.Rating)
-		switch err.(type) {
-		case *myerrors.ErrAnimeNotFound:
-			apiErrors.SetErrorInResponce(&apiErrors.ErrAnimeNotFound, w, http.StatusNotFound)
-			return
-		case nil:
-		default:
-			log.Println("Error: ", err)
+		if err != nil {
+			switch err.(type) {
+			case *myerrors.ErrAnimeNotFound:
+				apiErrors.SetErrorInResponce(&apiErrors.ErrAnimeNotFound, w, http.StatusNotFound)
+				return
+			default:
+				log.Println("Error: ", err)
+				apiErrors.SetErrorInResponce(&apiErrors.ErrInternalServerError, w, http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 }

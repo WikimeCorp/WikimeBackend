@@ -95,8 +95,7 @@ func GetAnimeSortedByRating(genres []string, order int8) ([]types.AnimeID, error
 	if ans == false {
 		return nil, &myerrors.ErrWrongGenres{badGenres}
 	}
-
-	animeIDs, err := db.GetAnimeIDsSortedByRating(genres, order)
+	animeIDs, err := db.GetAnimeIDsSortedByRating(genres, order, -1, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +109,7 @@ func GetAnimeSortedByFavorites(genres []string, order int8) ([]types.AnimeID, er
 		return nil, &myerrors.ErrWrongGenres{badGenres}
 	}
 
-	animeIDs, err := db.GetAnimeIDsSortedByFavorites(genres, order)
+	animeIDs, err := db.GetAnimeIDsSortedByFavorites(genres, order, -1, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +123,7 @@ func GetAnimeSortedByAddingDate(genres []string, order int8) ([]types.AnimeID, e
 		return nil, &myerrors.ErrWrongGenres{badGenres}
 	}
 
-	animeIDs, err := db.GetAnimeIDsSortedByAddingDate(genres, order)
+	animeIDs, err := db.GetAnimeIDsSortedByAddingDate(genres, order, -1, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +137,7 @@ func GetAnimeSortedByReleaseDate(genres []string, order int8) ([]types.AnimeID, 
 		return nil, &myerrors.ErrWrongGenres{badGenres}
 	}
 
-	animeIDs, err := db.GetAnimeIDsSortedByReleaseDate(genres, order)
+	animeIDs, err := db.GetAnimeIDsSortedByReleaseDate(genres, order, -1, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +146,7 @@ func GetAnimeSortedByReleaseDate(genres []string, order int8) ([]types.AnimeID, 
 }
 
 func GetMostPopular(limit int) ([]types.AnimeID, error) {
-	return db.GetAnimeIDsSortedByFavorites([]string{}, -1, limit)
+	return db.GetAnimeIDsSortedByFavorites([]string{}, -1, -1, limit)
 }
 
 // CheckAnime returns whether the anime exists. Can be true or false
