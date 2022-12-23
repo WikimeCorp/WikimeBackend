@@ -57,8 +57,8 @@ func ReplaceAnime(animeObjPtr *dbtypes.Anime) error {
 	err := animeCollection.FindOneAndReplace(ctx, bson.M{"_id": animeObjPtr.ID}, &animeObjPtr).Err()
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return &inerr.ErrAnimeNotFound{animeObjPtr.ID}
 		}
+		return &inerr.ErrAnimeNotFound{animeObjPtr.ID}
 		return err
 	}
 
@@ -222,4 +222,12 @@ func SearchAnime(text string) ([]AnimeID, error) {
 		return nil, err
 	}
 	return DecodeAnimesToIDListFromCursor(cur)
+}
+
+func UpdateDataAdded(id AnimeID) error {
+	ans, err := animeCollection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"DataAdded": time.Now()})
+	if ans.MatchedCount == 0 {
+		return &inerr.ErrAnimeNotFound{id}
+	}
+	return err
 }

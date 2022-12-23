@@ -167,5 +167,6 @@ func EditAnime(animeID types.AnimeID, anime *Anime) error {
 	if err != nil {
 		return err
 	}
-	return nil
+	err = db.UpdateDataAdded(animeID)
+	return err
 }
